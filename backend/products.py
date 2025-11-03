@@ -60,7 +60,7 @@ def view_product(product_id: int) -> List[Product]:
 
 # TODO: Add APIs supporting query parameters
 
-@router.post("/",response_model=Product, status_code=status.HTTP_201_CREATED)
+@router.post("/create",response_model=Product, status_code=status.HTTP_201_CREATED)
 def create_product(product: ProductCreate) -> Product:
     global next_id
     new_product = Product(id= next_id, **product.dict())
@@ -68,12 +68,11 @@ def create_product(product: ProductCreate) -> Product:
     next_id += 1
     return new_product
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
-def create_products(products: Dict[str, ProductCreate]):
-    # created = []
-    # for product in products:
-    #     created.append(create_product(product))
-    return {"message" : "success"}
+@router.post("/create_bulk", response_model=List[Product], status_code=status.HTTP_201_CREATED)
+def create_products(products: List[ProductCreate]) -> List[Product]:
+    created = []
+    for product in products:
+        created.append(create_product(product))
     return created
 
 @router.put("/{product_id}", response_model=Product)
