@@ -96,13 +96,17 @@ def update_qty(product_id: int, stock_update: StockUpdate) -> Product:
     product_db[product_id] = product
     return product
 
+@router.delete("/")
+def delete_bulk(indexes: List[int]):
+    for index in indexes:
+        delete_product(index)
+    return {"message" : "success"}
+
 @router.delete("/{product_id}")
 def delete_product(product_id: int):
     if not product_db.get(product_id):
         raise HTTPException(status_code=404, detail="Invalid product ID")
     product_db.pop(product_id)
     return {"message": f"Product {product_id} deleted successfully"}
-
-# TODO: Bulk delete
 
 
