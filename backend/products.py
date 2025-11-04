@@ -1,5 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 from typing import Optional, Dict, List
+
+from fastapi.params import Query
 from pydantic import BaseModel
 
 router = APIRouter(prefix="/products", tags=["Products"])
@@ -52,14 +54,23 @@ def get_summary_stats() -> SummaryStats:
     avg_price = round(sum(product.price for product in product_db.values())/total_products, 2)
     return SummaryStats(total_products=total_products, total_stock=total_stock, avg_price=avg_price)
 
+@router.get("/search", response_model=List[Product])
+def search_product(name: Optional[str] = Query(None),
+                   category: Optional[str] = Query(None)
+                   ) -> List[Product]:
+    products = list(product_db.values())
+    if name:
+        products = [p for p in products if name.lower() in p.name.lower()]
+    elif category:
+        products = [p for p in products if category.lower() in p.category.lower()]
+    return products
+
 @router.get("/{product_id}", response_model=Product)
 def view_product(product_id: int) -> List[Product]:
     product = product_db.get(product_id)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
     return product
-
-# TODO: Add APIs supporting query parameters
 
 @router.post("/create",response_model=Product, status_code=status.HTTP_201_CREATED)
 def create_product(product: ProductCreate) -> Product:
