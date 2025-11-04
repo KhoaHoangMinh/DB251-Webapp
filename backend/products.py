@@ -12,10 +12,11 @@ class Product(BaseModel):
     stock: int
 
 class ProductUpdate(BaseModel):
-    name: Optional[str]
-    category: Optional[str]
-    price: Optional[float]
-    stock: Optional[int]
+    id: int
+    name: Optional[str] = None
+    category: Optional[str] = None
+    price: Optional[float] = None
+    stock: Optional[int] = None
 
 class ProductCreate(BaseModel):
     name: str
@@ -76,14 +77,15 @@ def create_products(products: List[ProductCreate]) -> List[Product]:
     return created
 
 @router.put("/{product_id}", response_model=Product)
-def update_product(product_id: int, product_update: ProductUpdate) -> Product:
-    product = product_db.get(product_id)
+def update_product(product_update: ProductUpdate) -> Product:
+    product = product_db.get(product_update.id)
     if not product:
         raise HTTPException(status_code=404, detail="Invalid product ID")
-    updated_data = product_update.dict(exclude_unset=True)
-    updated = product.copy(update=updated_data)
-    product_db[product_id] = updated
-    return updated
+    if product_update.name: product.name = product_update.name
+    if product_update.category: product.category = product_update.category
+    if product_update.price: product.price = product_update.price
+    if product_update.stock: product.stock = product_update.stock
+    return product
 
 @router.patch("/{product_id}/stock", response_model=Product)
 def update_qty(product_id: int, stock_update: StockUpdate) -> Product:
