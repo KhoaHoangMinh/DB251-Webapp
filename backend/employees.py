@@ -1,5 +1,5 @@
-from fastapi import APIRouter, HTTPException, status
-from typing import Optional, Dict
+from fastapi import APIRouter, HTTPException, status, Body
+from typing import Optional, Dict, List
 from pydantic import BaseModel
 
 router = APIRouter(prefix="/employees", tags=["Employees"])
@@ -20,6 +20,12 @@ class SummaryStats(BaseModel):
     total_phone: int
     total_email: int
 
+class Employee_Update(BaseModel):
+    id: int
+    name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+
 employee_db = {
     1 : Employee(id=1, name="khoa", email="khoa@example.com", phone="12345678"),
     2 : Employee(id=2, name="john", email="john@example.com", phone="12345678"),
@@ -39,7 +45,7 @@ def get_summary_stats() -> SummaryStats:
     else :
         return SummaryStats(total_name = total_employees, total_email = total_employees, total_phone = total_employees)
 
-@router.get("/{empoyee_id}")
+@router.get("/{employee_id}")
 def view_employee(employee_id: int):
     employee = employee_db.get(employee_id)
     if not employee:
@@ -78,35 +84,32 @@ def create_employee(employee: Employees_Create):
     return new_employee
 
 # TODO: add create_employees()
-
-@router.put("/{employee_id}")
-def update_employee(employee_id: int,
-                    name: Optional[str] = None,
-                    email: Optional[str] = None,
-                    phone: Optional[str] = None):
-    employee = employee_db.get(employee_id)
-    if not employee:
-        raise HTTPException(status_code=404, detail="employee not found")
-    if name: employee.name = name
-    if email: employee.email = email
-    if phone: employee.phone = phone
-    return employee
+@router.post("/create_bulk", response_model = List[Employee], status_code = status.HTTP_201_CREATED)
+def create_employees(employees: List[Employees_Create]) -> List[Employees_Create]:
+    created = []
+    for employee in employees:
+        created.append(create_employee(employee))
+    return created
 
 @router.put("/")
-def update_employee(employee_id: int,
-                    name: Optional[str] = None,
-                    email: Optional[str] = None,
-                    phone: Optional[str] = None):
-    # TODO: modify to receceive object as parameter
-    employee = employee_db.get(employee_id)
-    if not employee:
+def update_employee(employee : Employee_Update):
+    # TODO: modify to receive object as parameter
+    new_employee = employee_db.get(employee.id)
+    if not new_employee:
         raise HTTPException(status_code=404, detail="employee not found")
-    if name: employee.name = name
-    if email: employee.email = email
-    if phone: employee.phone = phone
-    return employee
+    if employee.name: new_employee.name = employee.name
+    if employee.email: new_employee.email = employee.email
+    if employee.phone: new_employee.phone = employee.phone
+    return new_employee
 
 # TODO: add delete bulk
+@router.delete("/", status_code=status.HTTP_200_OK)
+def delete_bulk(indexes : List[int] = Body(...)):
+    for index in indexes:
+        if index not in employee_db:
+            raise HTTPException(status_code=404, detail="employee not found")
+        delete_employee(index)
+    return {"message": f"Deleted {len(indexes)} employees successfully"}
 
 @router.delete("/{employee_id}")
 def delete_employee(employee_id: int):
@@ -114,5 +117,5 @@ def delete_employee(employee_id: int):
     if not employee:
         raise HTTPException(status_code=404, detail="employee not found")
     employee_db.pop(employee_id)
-    return employee_db
+    return {"message": f"Employee {employee_id} deleted successfully"}
 
