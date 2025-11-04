@@ -1,0 +1,40 @@
+USE database_Webapp;
+
+CREATE TABLE IF NOT EXISTS Customer (
+    CustomerID INT PRIMARY KEY AUTO_INCREMENT,
+    Age INT NOT NULL CHECK (Age >= 18),
+    DateOfBirth DATE,
+    Name VARCHAR(100) NOT NULL,
+    Email VARCHAR(100) NOT NULL UNIQUE,
+    Phone VARCHAR(20) UNIQUE NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS Orders (
+    OrderID INT PRIMARY KEY AUTO_INCREMENT,
+    CustomerID INT,
+    TotalQty INT CHECK (TotalQty > 0),
+    DateOrder TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID)
+);
+
+CREATE TABLE IF NOT EXISTS Store (
+    StoreID INT PRIMARY KEY AUTO_INCREMENT,
+    StoreName VARCHAR(100),
+    StoreAddress VARCHAR(100),
+    OpeningHour TIME,
+    PhoneNumber VARCHAR(20) UNIQUE NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS Staff (
+    StaffID INT PRIMARY KEY AUTO_INCREMENT, 
+    StoreID INT,
+    Department VARCHAR(20) NOT NULL,
+    Position VARCHAR(20) NOT NULL,
+    FOREIGN KEY (StoreID) REFERENCES Store(StoreID)
+);
+
+CREATE TABLE IF NOT EXISTS Product (
+    ProductID INT PRIMARY KEY AUTO_INCREMENT,
+    ProductName VARCHAR(100) UNIQUE NOT NULL,
+    ProductDescription TEXT
+);
