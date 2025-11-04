@@ -15,6 +15,11 @@ class Employees_Create(BaseModel):
     email: str
     phone: str
 
+class SummaryStats(BaseModel):
+    total_name: int
+    total_phone: int
+    total_email: int
+
 employee_db = {
     1 : Employee(id=1, name="khoa", email="khoa@example.com", phone="12345678"),
     2 : Employee(id=2, name="john", email="john@example.com", phone="12345678"),
@@ -25,6 +30,14 @@ next_id = 3
 @router.get("/")
 def list_employees():
     return list(employee_db.values())
+
+@router.get("/stats", response_model=SummaryStats)
+def get_summary_stats() -> SummaryStats:
+    total_employees = len(employee_db)
+    if total_employees == 0 :
+        return SummaryStats(total_name = 0, total_email = 0, total_phone = 0)
+    else :
+        return SummaryStats(total_name = total_employees, total_email = total_employees, total_phone = total_employees)
 
 @router.get("/{empoyee_id}")
 def view_employee(employee_id: int):
@@ -46,9 +59,10 @@ def view_employee(employee_id: int):
 @router.post("/", status_code=status.HTTP_201_CREATED)
 def create_employee(employee: Employees_Create):
     global next_id
+
     if len(employee.phone) != 10 or employee.phone[0] != '0':
         raise HTTPException(status_code=400, detail="Invalid phone number")
-    print("DEBUG:", employee.email)
+
     if "@gmail.com" not in employee.email:
         raise HTTPException(status_code=400, detail="Invalid email")
 
@@ -96,3 +110,4 @@ def delete_employee(employee_id: int):
         raise HTTPException(status_code=404, detail="employee not found")
     employee_db.pop(employee_id)
     return employee_db
+
