@@ -77,6 +77,8 @@ def create_employee(employee: Employees_Create):
     next_id += 1
     return new_employee
 
+# TODO: add create_employees()
+
 @router.put("/{employee_id}")
 def update_employee(employee_id: int,
                     name: Optional[str] = None,
@@ -95,6 +97,7 @@ def update_employee(employee_id: int,
                     name: Optional[str] = None,
                     email: Optional[str] = None,
                     phone: Optional[str] = None):
+    # TODO: modify to receceive object as parameter
     employee = employee_db.get(employee_id)
     if not employee:
         raise HTTPException(status_code=404, detail="employee not found")
@@ -102,6 +105,8 @@ def update_employee(employee_id: int,
     if email: employee.email = email
     if phone: employee.phone = phone
     return employee
+
+# TODO: add delete bulk
 
 @router.delete("/{employee_id}")
 def delete_employee(employee_id: int):
