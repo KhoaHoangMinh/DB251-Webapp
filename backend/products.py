@@ -13,6 +13,10 @@ class Product(BaseModel):
     price: float
     stock: int
 
+class ProductSearch(BaseModel):
+    name: Optional[str] = None
+    category: Optional[str] = None
+
 class ProductUpdate(BaseModel):
     name: Optional[str] = None
     category: Optional[str] = None
@@ -34,11 +38,23 @@ class SummaryStats(BaseModel):
     avg_price: float
 
 product_db: Dict[int, Product] = {
-    1 : Product(id=1, name="Macbook", category="Electronics", price=1200.0, stock=15),
-    2 : Product(id=2, name="Smartphone", category="Electronics", price=800.0, stock=30),
-    3 : Product(id=3, name="Desk Chair", category="Furniture", price=150.0, stock=10),
+    1: Product(id=1, name="Macbook", category="Electronics", price=1200.0, stock=15),
+    2: Product(id=2, name="Smartphone", category="Electronics", price=800.0, stock=30),
+    3: Product(id=3, name="Desk Chair", category="Furniture", price=150.0, stock=10),
+    4: Product(id=4, name="Gaming Laptop", category="Electronics", price=1800.0, stock=8),
+    5: Product(id=5, name="Wireless Mouse", category="Electronics", price=25.0, stock=100),
+    6: Product(id=6, name="Bluetooth Headphones", category="Electronics", price=150.0, stock=25),
+    7: Product(id=7, name="LED TV", category="Electronics", price=500.0, stock=20),
+    8: Product(id=8, name="Dining Table", category="Furniture", price=350.0, stock=5),
+    9: Product(id=9, name="Bookshelf", category="Furniture", price=120.0, stock=12),
+    10: Product(id=10, name="Electric Kettle", category="Home Appliances", price=30.0, stock=50),
+    11: Product(id=11, name="Blender", category="Home Appliances", price=70.0, stock=40),
+    12: Product(id=12, name="Microwave", category="Home Appliances", price=100.0, stock=15),
+    13: Product(id=13, name="Coffee Maker", category="Home Appliances", price=90.0, stock=18),
+    14: Product(id=14, name="Refrigerator", category="Home Appliances", price=600.0, stock=10),
+    15: Product(id=15, name="Office Desk", category="Furniture", price=200.0, stock=7),
 }
-next_id = 4
+next_id = 16
 
 @router.get("/", response_model=List[Product])
 def list_products() -> List[Product]:
@@ -54,15 +70,13 @@ def get_summary_stats() -> SummaryStats:
     return SummaryStats(total_products=total_products, total_stock=total_stock, avg_price=avg_price)
 
 @router.get("/search", response_model=List[Product])
-def search_product(name: Optional[str] = Query(None),
-                   category: Optional[str] = Query(None)
-                   ) -> List[Product]:
-    products = list(product_db.values())
-    if name:
-        products = [p for p in products if name.lower() in p.name.lower()]
-    elif category:
-        products = [p for p in products if category.lower() in p.category.lower()]
-    return products
+def search_product(query: ProductSearch) -> List[Product]:
+    results = list(product_db.values())
+    if query.name:
+        results = [p for p in results if query.name.lower() in p.name.lower()]
+    elif query.category:
+        results = [p for p in results if query.category.lower() in p.category.lower()]
+    return results
 
 @router.get("/{product_id}", response_model=Product)
 def view_product(product_id: int) -> List[Product]:
