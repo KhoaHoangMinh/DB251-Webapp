@@ -14,7 +14,6 @@ class Product(BaseModel):
     stock: int
 
 class ProductUpdate(BaseModel):
-    id: int
     name: Optional[str] = None
     category: Optional[str] = None
     price: Optional[float] = None
@@ -88,8 +87,8 @@ def create_products(products: List[ProductCreate]) -> List[Product]:
     return created
 
 @router.put("/{product_id}", response_model=Product)
-def update_product(product_update: ProductUpdate) -> Product:
-    product = product_db.get(product_update.id)
+def update_product(product_update: ProductUpdate, product_id: int) -> Product:
+    product = product_db.get(product_id)
     if not product:
         raise HTTPException(status_code=404, detail="Invalid product ID")
     if product_update.name: product.name = product_update.name

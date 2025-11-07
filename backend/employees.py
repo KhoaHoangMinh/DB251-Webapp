@@ -21,7 +21,6 @@ class SummaryStats(BaseModel):
     total_email: int
 
 class Employee_Update(BaseModel):
-    id: int
     name: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[str] = None
@@ -66,11 +65,11 @@ def view_employee(employee_id: int):
 def create_employee(employee: Employees_Create):
     global next_id
 
-    if len(employee.phone) != 10 or employee.phone[0] != '0':
-        raise HTTPException(status_code=400, detail="Invalid phone number")
-
-    if "@gmail.com" not in employee.email:
-        raise HTTPException(status_code=400, detail="Invalid email")
+    # if len(employee.phone) != 10 or employee.phone[0] != '0':
+    #     raise HTTPException(status_code=400, detail="Invalid phone number")
+    #
+    # if "@gmail.com" not in employee.email:
+    #     raise HTTPException(status_code=400, detail="Invalid email")
 
     new_employee = Employee(
         id=next_id,
@@ -83,7 +82,6 @@ def create_employee(employee: Employees_Create):
     next_id += 1
     return new_employee
 
-# TODO: add create_employees()
 @router.post("/create_bulk", response_model = List[Employee], status_code = status.HTTP_201_CREATED)
 def create_employees(employees: List[Employees_Create]) -> List[Employees_Create]:
     created = []
@@ -91,10 +89,9 @@ def create_employees(employees: List[Employees_Create]) -> List[Employees_Create
         created.append(create_employee(employee))
     return created
 
-@router.put("/")
-def update_employee(employee : Employee_Update):
-    # TODO: modify to receive object as parameter
-    new_employee = employee_db.get(employee.id)
+@router.put("/{employee_id}")
+def update_employee(employee : Employee_Update, employee_id: int):
+    new_employee = employee_db.get(employee_id)
     if not new_employee:
         raise HTTPException(status_code=404, detail="employee not found")
     if employee.name: new_employee.name = employee.name
@@ -102,7 +99,6 @@ def update_employee(employee : Employee_Update):
     if employee.phone: new_employee.phone = employee.phone
     return new_employee
 
-# TODO: add delete bulk
 @router.delete("/", status_code=status.HTTP_200_OK)
 def delete_bulk(indexes : List[int] = Body(...)):
     for index in indexes:
