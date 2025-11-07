@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status, Body
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Type
 from pydantic import BaseModel
 
 router = APIRouter(prefix="/employees", tags=["Employees"])
@@ -30,10 +30,10 @@ employee_db = {
     2 : Employee(id=2, name="john", email="john@example.com", phone="12345678"),
     3 : Employee(id=3, name="duc", email="duc@example.com", phone="12345678"),
 }
-next_id = 3
+next_id = 4
 
-@router.get("/")
-def list_employees():
+@router.get("/", response_model=List[Employee])
+def list_employees() -> List[Employee]:
     return list(employee_db.values())
 
 @router.get("/stats", response_model=SummaryStats)
@@ -44,8 +44,8 @@ def get_summary_stats() -> SummaryStats:
     else :
         return SummaryStats(total_name = total_employees, total_email = total_employees, total_phone = total_employees)
 
-@router.get("/{employee_id}")
-def view_employee(employee_id: int):
+@router.get("/{employee_id}", response_model=Employee)
+def view_employee(employee_id: int) -> Employee:
     employee = employee_db.get(employee_id)
     if not employee:
         raise  HTTPException(status_code=404, detail="employee not found")
@@ -61,8 +61,8 @@ def view_employee(employee_id: int):
 #     next_id += 1
 #     return new_employee
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
-def create_employee(employee: Employees_Create):
+@router.post("/", response_model=Employee, status_code=status.HTTP_201_CREATED)
+def create_employee(employee: Employees_Create) -> Employee:
     global next_id
 
     # if len(employee.phone) != 10 or employee.phone[0] != '0':
@@ -83,14 +83,14 @@ def create_employee(employee: Employees_Create):
     return new_employee
 
 @router.post("/create_bulk", response_model = List[Employee], status_code = status.HTTP_201_CREATED)
-def create_employees(employees: List[Employees_Create]) -> List[Employees_Create]:
+def create_employees(employees: List[Employees_Create]) -> List[Employee]:
     created = []
     for employee in employees:
         created.append(create_employee(employee))
     return created
 
-@router.put("/{employee_id}")
-def update_employee(employee : Employee_Update, employee_id: int):
+@router.put("/{employee_id}", response_model=Employee)
+def update_employee(employee : Employee_Update, employee_id: int) -> Employee:
     new_employee = employee_db.get(employee_id)
     if not new_employee:
         raise HTTPException(status_code=404, detail="employee not found")

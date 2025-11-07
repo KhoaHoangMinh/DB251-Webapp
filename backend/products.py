@@ -71,7 +71,7 @@ def view_product(product_id: int) -> List[Product]:
         raise HTTPException(status_code=404, detail="Product not found")
     return product
 
-@router.post("/create",response_model=Product, status_code=status.HTTP_201_CREATED)
+@router.post("/create", response_model=Product, status_code=status.HTTP_201_CREATED)
 def create_product(product: ProductCreate) -> Product:
     global next_id
     new_product = Product(id= next_id, **product.dict())
