@@ -10,6 +10,11 @@ class Employee(BaseModel):
     email: str
     phone: str
 
+class EmployeeSearch(BaseModel):
+    name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[int] = None
+
 class Employees_Create(BaseModel):
     name: str
     email: str
@@ -26,11 +31,23 @@ class Employee_Update(BaseModel):
     phone: Optional[str] = None
 
 employee_db = {
-    1 : Employee(id=1, name="khoa", email="khoa@example.com", phone="12345678"),
-    2 : Employee(id=2, name="john", email="john@example.com", phone="12345678"),
-    3 : Employee(id=3, name="duc", email="duc@example.com", phone="12345678"),
+    1: Employee(id=1, name="Khoa Nguyen", email="khoa.nguyen@example.com", phone="12345678"),
+    2: Employee(id=2, name="John Smith", email="john.smith@example.com", phone="12345678"),
+    3: Employee(id=3, name="Duc Tran", email="duc.tran@example.com", phone="12345678"),
+    4: Employee(id=4, name="Alice Johnson", email="alice.johnson@example.com", phone="87654321"),
+    5: Employee(id=5, name="Bob Smith", email="bob.smith@example.com", phone="98765432"),
+    6: Employee(id=6, name="Charlie Nguyen", email="charlie.nguyen@example.com", phone="56789012"),
+    7: Employee(id=7, name="David Brown", email="david.brown@example.com", phone="43210987"),
+    8: Employee(id=8, name="Emma Tran", email="emma.tran@example.com", phone="24681357"),
+    9: Employee(id=9, name="Sophia Johnson", email="sophia.johnson@example.com", phone="13572468"),
+    10: Employee(id=10, name="Liam Wilson", email="liam.wilson@example.com", phone="11223344"),
+    11: Employee(id=11, name="Olivia Brown", email="olivia.brown@example.com", phone="22334455"),
+    12: Employee(id=12, name="Noah Miller", email="noah.miller@example.com", phone="33445566"),
+    13: Employee(id=13, name="Ava Nguyen", email="ava.nguyen@example.com", phone="44556677"),
+    14: Employee(id=14, name="James Wilson", email="james.wilson@example.com", phone="55667788"),
+    15: Employee(id=15, name="Mia Tran", email="mia.tran@example.com", phone="66778899"),
 }
-next_id = 4
+next_id = 16
 
 @router.get("/", response_model=List[Employee])
 def list_employees() -> List[Employee]:
@@ -43,6 +60,17 @@ def get_summary_stats() -> SummaryStats:
         return SummaryStats(total_name = 0, total_email = 0, total_phone = 0)
     else :
         return SummaryStats(total_name = total_employees, total_email = total_employees, total_phone = total_employees)
+
+@router.get('/search', response_model=List[Employee])
+def search_employee(query: EmployeeSearch) -> List[Employee]:
+    results = list(employee_db.values())
+    if query.name:
+        results = [e for e in results if query.name.lower() in e.name.lower()]
+    elif query.email:
+        results = [e for e in results if query.email.lower() in e.email.lower()]
+    elif query.phone:
+        results = [e for e in results if query.phone == e.phone]
+    return results
 
 @router.get("/{employee_id}", response_model=Employee)
 def view_employee(employee_id: int) -> Employee:
