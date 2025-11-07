@@ -3,10 +3,11 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+import uvicorn
 
 from products import router as product_router
 from employees import router as employee_router
+from auth import router as auth_router
 
 """"
     create venv
@@ -29,14 +30,10 @@ app.add_middleware(
 )
 app.include_router(product_router)
 app.include_router(employee_router)
+app.include_router(auth_router)
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
-
-# Serve index.html at root
-@app.get("/")
-def read_root():
-    return FileResponse("static/index.html")
 
 @app.get("/")
 def read_root():
@@ -47,3 +44,6 @@ def read_item(item_id: int, q: Union[str, None] = None):
 @app.put("/items/{item_id}")
 def update_item(item_id: int, item: Item):
     return {"item_name": item.name, "item_id": item_id}
+
+if __name__ == '__main__':
+    uvicorn.run(app, host='0.0.0.0', port=8000)
