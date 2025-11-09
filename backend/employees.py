@@ -1,145 +1,119 @@
-from fastapi import APIRouter, HTTPException, status, Body
-from typing import Optional, Dict, List, Type
+from fastapi import APIRouter, HTTPException, status, Body, Depends
+from typing import Optional, List, Annotated
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
+
+from database import Base, engine, get_db, db_dependency
+from models import Employee
 
 router = APIRouter(prefix="/employees", tags=["Employees"])
 
-class Employee(BaseModel):
-    id: int
-    name: str
-    email: str
-    phone: str
-
-class EmployeeSearch(BaseModel):
-    name: Optional[str] = None
-    email: Optional[str] = None
-    phone: Optional[int] = None
-
 class Employees_Create(BaseModel):
-    name: str
-    email: str
-    phone: str
+    StoreID: int
+    Department: str
+    Position : str
 
 class SummaryStats(BaseModel):
-    total_name: int
-    total_phone: int
-    total_email: int
+    total_employees: int
+    total_positions: int
+    total_departments: int
 
 class Employee_Update(BaseModel):
-    name: Optional[str] = None
-    email: Optional[str] = None
-    phone: Optional[str] = None
+    EmployeeID: int
+    Department: Optional[str] = None
+    Position: Optional[str] = None
 
-employee_db = {
-    1: Employee(id=1, name="Khoa Nguyen", email="khoa.nguyen@example.com", phone="12345678"),
-    2: Employee(id=2, name="John Smith", email="john.smith@example.com", phone="12345678"),
-    3: Employee(id=3, name="Duc Tran", email="duc.tran@example.com", phone="12345678"),
-    4: Employee(id=4, name="Alice Johnson", email="alice.johnson@example.com", phone="87654321"),
-    5: Employee(id=5, name="Bob Smith", email="bob.smith@example.com", phone="98765432"),
-    6: Employee(id=6, name="Charlie Nguyen", email="charlie.nguyen@example.com", phone="56789012"),
-    7: Employee(id=7, name="David Brown", email="david.brown@example.com", phone="43210987"),
-    8: Employee(id=8, name="Emma Tran", email="emma.tran@example.com", phone="24681357"),
-    9: Employee(id=9, name="Sophia Johnson", email="sophia.johnson@example.com", phone="13572468"),
-    10: Employee(id=10, name="Liam Wilson", email="liam.wilson@example.com", phone="11223344"),
-    11: Employee(id=11, name="Olivia Brown", email="olivia.brown@example.com", phone="22334455"),
-    12: Employee(id=12, name="Noah Miller", email="noah.miller@example.com", phone="33445566"),
-    13: Employee(id=13, name="Ava Nguyen", email="ava.nguyen@example.com", phone="44556677"),
-    14: Employee(id=14, name="James Wilson", email="james.wilson@example.com", phone="55667788"),
-    15: Employee(id=15, name="Mia Tran", email="mia.tran@example.com", phone="66778899"),
-}
-next_id = 16
 
-@router.get("/", response_model=List[Employee])
-def list_employees() -> List[Employee]:
-    return list(employee_db.values())
+@router.get("/")
+def list_employees(db: db_dependency):
+    return db.query(Employee).all()
 
 @router.get("/stats", response_model=SummaryStats)
-def get_summary_stats() -> SummaryStats:
-    total_employees = len(employee_db)
+def get_summary_stats(db : db_dependency) -> SummaryStats:
+    total_employees = len(db.query(Employee).all())
     if total_employees == 0 :
         return SummaryStats(total_name = 0, total_email = 0, total_phone = 0)
     else :
-        return SummaryStats(total_name = total_employees, total_email = total_employees, total_phone = total_employees)
+        total_positions = len(db.query(Employee.Position).all())
+        total_departments = len(db.query(Employee.Department).all())
+        return SummaryStats(total_employees = total_employees, total_position = total_positions, total_departments = total_departments)
 
-@router.get('/search', response_model=List[Employee])
-def search_employee(query: EmployeeSearch) -> List[Employee]:
-    results = list(employee_db.values())
-    if query.name:
-        results = [e for e in results if query.name.lower() in e.name.lower()]
-    elif query.email:
-        results = [e for e in results if query.email.lower() in e.email.lower()]
-    elif query.phone:
-        results = [e for e in results if query.phone == e.phone]
-    return results
-
-@router.get("/{employee_id}", response_model=Employee)
-def view_employee(employee_id: int) -> Employee:
-    employee = employee_db.get(employee_id)
+@router.get("/{employee_id}")
+def view_employee(employee_id: int, db : db_dependency):
+    employee = db.query(Employee).get(employee_id)
     if not employee:
         raise  HTTPException(status_code=404, detail="employee not found")
     return employee
 
-# @router.post("/", status_code=status.HTTP_201_CREATED)
-# def create_employee(id: int, name: str, email: str, phone: int):
-#     global next_id
-#     if id < 0 or phone < 0:
-#         raise HTTPException(status_code=400, detail="Invalid id or phone number")
-#     new_employee = Employee(id=id, name=name, email=email, phone=phone)
-#     employee_db[next_id] = new_employee
-#     next_id += 1
-#     return new_employee
+@router.post("/", status_code=status.HTTP_201_CREATED)
+def create_employee(new_employee: Employees_Create, db: db_dependency):
+    db_employee = Employee(**new_employee.dict())
+    db.add(db_employee)
+    db.commit()
+    db.refresh(db_employee)
+    return db_employee
 
-@router.post("/", response_model=Employee, status_code=status.HTTP_201_CREATED)
-def create_employee(employee: Employees_Create) -> Employee:
-    global next_id
-
-    # if len(employee.phone) != 10 or employee.phone[0] != '0':
-    #     raise HTTPException(status_code=400, detail="Invalid phone number")
-    #
-    # if "@gmail.com" not in employee.email:
-    #     raise HTTPException(status_code=400, detail="Invalid email")
-
-    new_employee = Employee(
-        id=next_id,
-        name=employee.name,
-        email=employee.email,
-        phone=employee.phone
-    )
-
-    employee_db[next_id] = new_employee
-    next_id += 1
-    return new_employee
-
-@router.post("/create_bulk", response_model = List[Employee], status_code = status.HTTP_201_CREATED)
-def create_employees(employees: List[Employees_Create]) -> List[Employee]:
+# TODO: add create_employees()
+@router.post("/", response_model = List[Employees_Create], status_code = status.HTTP_201_CREATED)
+def create_employees(employees: List[Employees_Create], db : db_dependency) -> List[Employees_Create]:
     created = []
     for employee in employees:
-        created.append(create_employee(employee))
+        created.append(employee)
+        db_employee = Employee(**employee.dict())
+        db.add(db_employee)
+        db.commit()
+        db.refresh(db_employee)
     return created
 
-@router.put("/{employee_id}", response_model=Employee)
-def update_employee(employee : Employee_Update, employee_id: int) -> Employee:
-    new_employee = employee_db.get(employee_id)
-    if not new_employee:
-        raise HTTPException(status_code=404, detail="employee not found")
-    if employee.name: new_employee.name = employee.name
-    if employee.email: new_employee.email = employee.email
-    if employee.phone: new_employee.phone = employee.phone
-    return new_employee
+@router.put("/")
+def update_employee(employee : Employee_Update, db : db_dependency):
+    # TODO: modify to receive object as parameter
+    db_employee = db.query(Employee).filter(Employee.EmployeeID == employee.EmployeeID).first()
 
-@router.delete("/", status_code=status.HTTP_200_OK)
-def delete_bulk(indexes : List[int] = Body(...)):
-    for index in indexes:
-        if index not in employee_db:
-            raise HTTPException(status_code=404, detail="employee not found")
-        delete_employee(index)
-    return {"message": f"Deleted {len(indexes)} employees successfully"}
+    if not db_employee:
+        raise HTTPException(status_code=404, detail="employee not found")
+    if employee.Position is not None:
+        db_employee.Position = employee.Position
+    if employee.Department is not None:
+        db_employee.Department = employee.Department
+
+    db.commit()
+    db.refresh(db_employee)
+    return db_employee
+
+# TODO: add delete bulk
+@router.delete("/bulk/delete", status_code=status.HTTP_200_OK)
+def delete_bulk(indexes : List[int] = Body(...), db : Session = Depends(db_dependency)):
+    if not indexes:
+        raise HTTPException(status_code=404, detail="No employee IDs provided")
+
+    #Find all employees that exist
+    existing_employees = db.query(Employee).filter(
+        Employee.EmployeeID.in_(indexes)
+    ).all()
+
+    existing_ids = [emp.EmployeeID for emp in existing_employees]
+    non_existing_id = set(indexes) - set(existing_ids)
+
+    if non_existing_id:
+        raise HTTPException(status_code=404, detail=f"Employee not found: {list(non_existing_id)}")
+
+    # Delete all in one transaction
+    deleted_count = db.query(Employee).filter(Employee.EmployeeID.in_(indexes)).delete(synchronize_session=False)
+    db.commit()
+
+    return {
+        "message": f"Deleted {deleted_count} employees successfully",
+        "deleted_ids": indexes
+    }
 
 @router.delete("/{employee_id}")
-def delete_employee(employee_id: int):
-    employee = employee_db.get(employee_id)
-    if not employee:
+def delete_employee(employee_id: int, db : db_dependency):
+    db_employee = db.query(Employee).filter(Employee.EmployeeID == employee_id).first()
+    if not db_employee:
         raise HTTPException(status_code=404, detail="employee not found")
-    employee_db.pop(employee_id)
+    db.delete(db_employee)
+    db.commit()
+    db.refresh(db_employee)
     return {"message": f"Employee {employee_id} deleted successfully"}
 
