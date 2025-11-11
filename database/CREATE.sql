@@ -1,5 +1,8 @@
 CREATE DATABASE database_webapp;
+GO
+
 USE database_webapp;
+GO
 
 CREATE TABLE Customer (
     CustomerID INT IDENTITY(1,1) PRIMARY KEY,
