@@ -1,3 +1,4 @@
+CREATE DATABASE database_webapp;
 USE database_webapp;
 
 CREATE TABLE Customer (
