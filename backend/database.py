@@ -8,11 +8,11 @@ import os
 import pyodbc
 
 """
-   URL_DATABASE="mssql+pyodbc://sa:YourPassword@localhost/database_name?driver=ODBC+Driver+17+for+SQL+Server"
+   URL_DATABASE="mssql+pyodbc://SA:YourPassword@localhost/database_name?driver=ODBC+Driver+17+for+SQL+Server&TrustServerCertificate=yes"
 """
 
 URL_DATABASE=\
-    "mssql+pyodbc://sa:truong675@localhost,1433/database_webapp?driver=ODBC+Driver+18+for+SQL+Server&Encrypt=no"
+    "mssql+pyodbc://sa:Truong%40675@localhost,1433/database_webapp?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes"
 
 engine = create_engine(URL_DATABASE, pool_pre_ping=True)
 

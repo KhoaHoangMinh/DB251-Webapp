@@ -45,7 +45,7 @@ class Store(Base):
     PhoneNumber = Column(String(10), nullable=False, unique=True)
 
 class Employee(Base):
-    __tablename__ = 'Staff'
+    __tablename__ = 'Employee'
 
     EmployeeID = Column(Integer, primary_key=True, index=True, autoincrement=True)
     StoreID = Column(Integer, ForeignKey('Store.StoreID'))

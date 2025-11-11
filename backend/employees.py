@@ -36,7 +36,7 @@ def get_summary_stats(db : db_dependency) -> SummaryStats:
     else :
         total_positions = len(db.query(Employee.Position).all())
         total_departments = len(db.query(Employee.Department).all())
-        return SummaryStats(total_employees = total_employees, total_position = total_positions, total_departments = total_departments)
+        return SummaryStats(total_employees = total_employees, total_positions = total_positions, total_departments = total_departments)
 
 @router.get("/{employee_id}")
 def view_employee(employee_id: int, db : db_dependency):
@@ -54,7 +54,7 @@ def create_employee(new_employee: Employees_Create, db: db_dependency):
     return db_employee
 
 # TODO: add create_employees()
-@router.post("/", response_model = List[Employees_Create], status_code = status.HTTP_201_CREATED)
+@router.post("/create_bulk", response_model = List[Employees_Create], status_code = status.HTTP_201_CREATED)
 def create_employees(employees: List[Employees_Create], db : db_dependency) -> List[Employees_Create]:
     created = []
     for employee in employees:
@@ -82,8 +82,8 @@ def update_employee(employee : Employee_Update, db : db_dependency):
     return db_employee
 
 # TODO: add delete bulk
-@router.delete("/bulk/delete", status_code=status.HTTP_200_OK)
-def delete_bulk(indexes : List[int] = Body(...), db : Session = Depends(db_dependency)):
+@router.delete("/delete_bulk", status_code=status.HTTP_200_OK)
+def delete_bulk(indexes : List[int] = Body(...), db : Session = Depends(get_db)):
     if not indexes:
         raise HTTPException(status_code=404, detail="No employee IDs provided")
 
@@ -114,6 +114,5 @@ def delete_employee(employee_id: int, db : db_dependency):
         raise HTTPException(status_code=404, detail="employee not found")
     db.delete(db_employee)
     db.commit()
-    db.refresh(db_employee)
     return {"message": f"Employee {employee_id} deleted successfully"}
 
