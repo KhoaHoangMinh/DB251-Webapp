@@ -1,4 +1,3 @@
-CREATE DATABASE database_webapp;
 USE database_webapp;
 
 CREATE TABLE Customer (
@@ -9,7 +8,7 @@ CREATE TABLE Customer (
     Email VARCHAR(100) NOT NULL UNIQUE,
     Phone VARCHAR(20) UNIQUE NOT NULL
 );
-CREATE DATABASE database_webapp
+
 CREATE TABLE Orders (
     OrderID INT IDENTITY(1,1) PRIMARY KEY,
     CustomerID INT,
