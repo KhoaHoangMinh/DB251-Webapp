@@ -12,7 +12,7 @@ import pyodbc
 """
 
 URL_DATABASE=\
-    "mssql+pyodbc://SA:YourStrong!Passw0rd123@localhost,1433/database_webapp?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes"
+    "mssql+pyodbc://sa:Truong%40675@localhost,1433/database_webapp?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes"
 
 engine = create_engine(URL_DATABASE, pool_pre_ping=True)
 
