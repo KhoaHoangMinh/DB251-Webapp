@@ -25,7 +25,7 @@ def list_products(db: db_dependency):
 
 @router.get("/stats", response_model=SummaryStats)
 def get_summary_stats(db: db_dependency) -> SummaryStats:
-    total_products = len(db.query(Product).all())
+    total_products = db.query(Product).count()
     if total_products == 0:
         return SummaryStats(total_products=0)
     return SummaryStats(total_products=total_products)

@@ -30,12 +30,12 @@ def list_employees(db: db_dependency):
 
 @router.get("/stats", response_model=SummaryStats)
 def get_summary_stats(db : db_dependency) -> SummaryStats:
-    total_employees = len(db.query(Employee).all())
+    total_employees = db.query(Employee).count()
     if total_employees == 0 :
-        return SummaryStats(total_name = 0, total_email = 0, total_phone = 0)
+        return SummaryStats(total_employees = 0, total_positions = 0, total_departments = 0)
     else :
-        total_positions = len(db.query(Employee.Position).all())
-        total_departments = len(db.query(Employee.Department).all())
+        total_positions = db.query(Employee.Position).distinct().count()
+        total_departments = db.query(Employee.Department).distinct().count()
         return SummaryStats(total_employees = total_employees, total_positions = total_positions, total_departments = total_departments)
 
 @router.get("/{employee_id}")
