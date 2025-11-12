@@ -19,7 +19,6 @@ class SummaryStats(BaseModel):
     total_departments: int
 
 class Employee_Update(BaseModel):
-    EmployeeID: int
     Department: Optional[str] = None
     Position: Optional[str] = None
 
@@ -53,59 +52,29 @@ def create_employee(new_employee: Employees_Create, db: db_dependency):
     db.refresh(db_employee)
     return db_employee
 
-# TODO: add create_employees()
-@router.post("/create_bulk", response_model = List[Employees_Create], status_code = status.HTTP_201_CREATED)
-def create_employees(employees: List[Employees_Create], db : db_dependency) -> List[Employees_Create]:
+@router.post("/create_bulk", status_code = status.HTTP_201_CREATED)
+def create_employees(employees: List[Employees_Create], db : db_dependency):
     created = []
     for employee in employees:
-        created.append(employee)
-        db_employee = Employee(**employee.dict())
-        db.add(db_employee)
-        db.commit()
-        db.refresh(db_employee)
+        created.append(create_employee(employee, db))
     return created
 
-@router.put("/")
-def update_employee(employee : Employee_Update, db : db_dependency):
-    # TODO: modify to receive object as parameter
-    db_employee = db.query(Employee).filter(Employee.EmployeeID == employee.EmployeeID).first()
-
+@router.put("/{employee_id}")
+def update_employee(employee_id: int, employee : Employee_Update, db : db_dependency):
+    db_employee = db.query(Employee).filter(Employee.EmployeeID == employee_id).first()
     if not db_employee:
         raise HTTPException(status_code=404, detail="employee not found")
-    if employee.Position is not None:
-        db_employee.Position = employee.Position
-    if employee.Department is not None:
-        db_employee.Department = employee.Department
-
+    if employee.Position: db_employee.Position = employee.Position
+    if employee.Department: db_employee.Department = employee.Department
     db.commit()
     db.refresh(db_employee)
     return db_employee
 
-# TODO: add delete bulk
 @router.delete("/delete_bulk", status_code=status.HTTP_200_OK)
 def delete_bulk(indexes : List[int] = Body(...), db : Session = Depends(get_db)):
-    if not indexes:
-        raise HTTPException(status_code=404, detail="No employee IDs provided")
-
-    #Find all employees that exist
-    existing_employees = db.query(Employee).filter(
-        Employee.EmployeeID.in_(indexes)
-    ).all()
-
-    existing_ids = [emp.EmployeeID for emp in existing_employees]
-    non_existing_id = set(indexes) - set(existing_ids)
-
-    if non_existing_id:
-        raise HTTPException(status_code=404, detail=f"Employee not found: {list(non_existing_id)}")
-
-    # Delete all in one transaction
-    deleted_count = db.query(Employee).filter(Employee.EmployeeID.in_(indexes)).delete(synchronize_session=False)
-    db.commit()
-
-    return {
-        "message": f"Deleted {deleted_count} employees successfully",
-        "deleted_ids": indexes
-    }
+    for index in indexes:
+        delete_employee(index, db)
+    return {"message": "success"}
 
 @router.delete("/{employee_id}")
 def delete_employee(employee_id: int, db : db_dependency):
