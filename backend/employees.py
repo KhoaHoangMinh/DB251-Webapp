@@ -1,26 +1,31 @@
 from fastapi import APIRouter, HTTPException, status, Body, Depends
-from typing import Optional, List, Annotated
+from typing import Optional, List
 from pydantic import BaseModel
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from database import Base, engine, get_db, db_dependency
+from database import get_db, db_dependency
 from models import Employee
 
 router = APIRouter(prefix="/employees", tags=["Employees"])
 
 class Employees_Create(BaseModel):
-    StoreID: int
+    EmployeeName: str
+    StoreID: str
     Department: str
     Position : str
+    Salary: float
 
 class SummaryStats(BaseModel):
     total_employees: int
     total_positions: int
     total_departments: int
+    total_salary: float
 
 class Employee_Update(BaseModel):
     Department: Optional[str] = None
     Position: Optional[str] = None
+    Salary: Optional[float] = None
 
 
 @router.get("/")
@@ -31,14 +36,15 @@ def list_employees(db: db_dependency):
 def get_summary_stats(db : db_dependency) -> SummaryStats:
     total_employees = db.query(Employee).count()
     if total_employees == 0 :
-        return SummaryStats(total_employees = 0, total_positions = 0, total_departments = 0)
+        return SummaryStats(total_employees = 0, total_positions = 0, total_departments = 0, total_salary = 0)
     else :
         total_positions = db.query(Employee.Position).distinct().count()
         total_departments = db.query(Employee.Department).distinct().count()
-        return SummaryStats(total_employees = total_employees, total_positions = total_positions, total_departments = total_departments)
+        total_salary = db.query(func.sum(Employee.Salary)).scalar()
+        return SummaryStats(total_employees = total_employees, total_positions = total_positions, total_departments = total_departments, total_salary = total_salary)
 
 @router.get("/{employee_id}")
-def view_employee(employee_id: int, db : db_dependency):
+def view_employee(employee_id: str, db : db_dependency):
     employee = db.query(Employee).get(employee_id)
     if not employee:
         raise  HTTPException(status_code=404, detail="employee not found")
@@ -60,7 +66,7 @@ def create_employees(employees: List[Employees_Create], db : db_dependency):
     return created
 
 @router.put("/{employee_id}")
-def update_employee(employee_id: int, employee : Employee_Update, db : db_dependency):
+def update_employee(employee_id: str, employee : Employee_Update, db : db_dependency):
     db_employee = db.query(Employee).filter(Employee.EmployeeID == employee_id).first()
     if not db_employee:
         raise HTTPException(status_code=404, detail="employee not found")
@@ -71,13 +77,13 @@ def update_employee(employee_id: int, employee : Employee_Update, db : db_depend
     return db_employee
 
 @router.delete("/delete_bulk", status_code=status.HTTP_200_OK)
-def delete_bulk(indexes : List[int] = Body(...), db : Session = Depends(get_db)):
+def delete_bulk(indexes : List[str] = Body(...), db : Session = Depends(get_db)):
     for index in indexes:
         delete_employee(index, db)
     return {"message": "success"}
 
 @router.delete("/{employee_id}")
-def delete_employee(employee_id: int, db : db_dependency):
+def delete_employee(employee_id: str, db : db_dependency):
     db_employee = db.query(Employee).filter(Employee.EmployeeID == employee_id).first()
     if not db_employee:
         raise HTTPException(status_code=404, detail="employee not found")

@@ -1,59 +1,132 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Date, TIMESTAMP, CheckConstraint, TIME
-from sqlalchemy.dialects.mssql.information_schema import constraints
+from sqlalchemy import Column, String, Integer, Date, DateTime, Time, Boolean, DECIMAL, Text, CheckConstraint, ForeignKey, Sequence
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
+import datetime
 from database import Base
 
-class Customer(Base):
-    __tablename__ = 'Customer'
 
-    CustomerID = Column(Integer, primary_key=True, index=True, autoincrement=True)
+class Customer(Base):
+    __tablename__ = "Customer"
+
+    CustomerID = Column(String(10), primary_key=True)
     Age = Column(Integer, nullable=False)
-    DateOfBirth = Column(Date)
+    DateOfBirth = Column(Date, nullable=False)
     CustomerName = Column(String(100), nullable=False)
     Email = Column(String(100), nullable=False, unique=True)
-    Phone = Column(String(10), nullable=False, unique=True)
+    Phone = Column(String(20), nullable=False, unique=True)
+    RegistrationDate = Column(DateTime, server_default=func.now())
+    IsActive = Column(Boolean, default=True)
+    LoyaltyPoints = Column(Integer, default=0)
+
+    # Relationships
+    orders = relationship("Orders", back_populates="customer")
+
     __table_args__ = (
-        CheckConstraint('Age >= 18', name='check_age_more_than_18'),
+        CheckConstraint('Age >= 18', name='check_age'),
+        CheckConstraint('LoyaltyPoints >= 0', name='check_loyalty_points'),
+        CheckConstraint("Email LIKE '%_@gmail.com%'", name='check_email_format'),
     )
 
-class Product(Base):
-    __tablename__ = 'Product'
-
-    ProductID = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    ProductName = Column(String(100), nullable=False, unique=True)
-    ProductDescription = Column(String(1000))
-
-class Order(Base):
-    __tablename__ = 'Order'
-
-    OrderID = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    CustomerID = Column(Integer, ForeignKey('Customer.CustomerID'))
-    TotalQty = Column(Integer, nullable=False)
-    __table_args__ = (
-        CheckConstraint('TotalQty > 0', name='check_totalqty_over_0'),
-    )
-    DateOrder = Column(TIMESTAMP)
 
 class Store(Base):
-    __tablename__ = 'Store'
+    __tablename__ = "Store"
 
-    StoreID = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    StoreID = Column(String(10), primary_key=True)
     StoreName = Column(String(100), nullable=False)
-    StoreAddress = Column(String(100), nullable=False)
-    OpeningHour = Column(TIME)
-    ClosingHour = Column(TIME)
-    PhoneNumber = Column(String(10), nullable=False, unique=True)
+    StoreAddress = Column(String(255), nullable=False, unique=True)
+    OpeningHour = Column(Time, nullable=False)
+    ClosingHour = Column(Time, nullable=False)
+    PhoneNumber = Column(String(20), nullable=False, unique=True)
+    Email = Column(String(100))
+    IsActive = Column(Boolean, default=True)
+
+    # Relationships
+    employees = relationship("Employee", back_populates="store")
+    orders = relationship("Orders", back_populates="store")
+
+    __table_args__ = (
+        CheckConstraint('ClosingHour > OpeningHour', name='check_hours'),
+    )
+
 
 class Employee(Base):
-    __tablename__ = 'Employee'
+    __tablename__ = "Employee"
 
-    EmployeeID = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    StoreID = Column(Integer, ForeignKey('Store.StoreID'))
-    Department = Column(String(100), nullable=False)
-    Position = Column(String(20), nullable=False)
+    EmployeeID = Column(String(10), primary_key=True)
+    EmployeeName = Column(String(100), nullable=False)
+    StoreID = Column(String(10), ForeignKey('Store.StoreID'), nullable=False)
+    Department = Column(String(50), nullable=False)
+    Position = Column(String(50), nullable=False)
+    IsActive = Column(Boolean, default=True)
+    Salary = Column(DECIMAL(10, 2))
+
+    # Relationships
+    store = relationship("Store", back_populates="employees")
+
+    __table_args__ = (
+        CheckConstraint('Salary >= 0', name='check_salary'),
+    )
+
+
+class Product(Base):
+    __tablename__ = "Product"
+
+    ProductID = Column(String(10), primary_key=True)
+    ProductName = Column(String(100), nullable=False, unique=True)
+    ProductDescription = Column(Text)
+    Price = Column(DECIMAL(10, 2), nullable=False)
+    StockQuantity = Column(Integer, default=0)
+    IsActive = Column(Boolean, default=True)
+    CreatedDate = Column(DateTime, server_default=func.now())
+
+    # Relationships
+    order_items = relationship("OrderItem", back_populates="product")
+
+    __table_args__ = (
+        CheckConstraint('Price >= 0', name='check_price'),
+        CheckConstraint('StockQuantity >= 0', name='check_stock_quantity'),
+    )
+
+
+class Orders(Base):
+    __tablename__ = "Orders"
+
+    OrderID = Column(String(10), primary_key=True)
+    CustomerID = Column(String(10), ForeignKey('Customer.CustomerID'), nullable=False)
+    StoreID = Column(String(10), ForeignKey('Store.StoreID'), nullable=False)
+    TotalQty = Column(Integer, nullable=False)
+    TotalAmount = Column(DECIMAL(10, 2))
+    DateOrder = Column(DateTime, server_default=func.now())
+    OrderStatus = Column(String(20), default='Pending')
+
+    # Relationships
+    customer = relationship("Customer", back_populates="orders")
+    store = relationship("Store", back_populates="orders")
+    order_items = relationship("OrderItem", back_populates="order")
+
+    __table_args__ = (
+        CheckConstraint('TotalQty > 0', name='check_total_qty'),
+        CheckConstraint('TotalAmount >= 0', name='check_total_amount'),
+        CheckConstraint("OrderStatus IN ('Pending', 'Confirmed', 'Processing', 'Shipped', 'Delivered', 'Cancelled')",
+                        name='check_order_status'),
+    )
+
 
 class OrderItem(Base):
-    __tablename__ = 'OrderItem'
+    __tablename__ = "OrderItem"
 
-    OrderID = Column(Integer, ForeignKey('Order.OrderID'), primary_key=True)
-    ProductID = Column(Integer, ForeignKey('Product.ProductID'), primary_key=True)
+    OrderID = Column(String(10), ForeignKey('Orders.OrderID'), primary_key=True)
+    ProductID = Column(String(10), ForeignKey('Product.ProductID'), primary_key=True)
+    Quantity = Column(Integer, nullable=False)
+    UnitPrice = Column(DECIMAL(10, 2), nullable=False)
+    LineTotal = Column(DECIMAL(10, 2), computed='Quantity * UnitPrice')
+
+    # Relationships
+    order = relationship("Orders", back_populates="order_items")
+    product = relationship("Product", back_populates="order_items")
+
+    __table_args__ = (
+        CheckConstraint('Quantity > 0', name='check_quantity'),
+        CheckConstraint('UnitPrice >= 0', name='check_unit_price'),
+    )
