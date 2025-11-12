@@ -19,7 +19,7 @@ class Customer(Base):
 class Product(Base):
     __tablename__ = 'Product'
 
-    ProductIP = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    ProductID = Column(Integer, primary_key=True, index=True, autoincrement=True)
     ProductName = Column(String(100), nullable=False, unique=True)
     ProductDescription = Column(String(1000))
 
