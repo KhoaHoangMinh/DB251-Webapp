@@ -16,6 +16,7 @@ GO
 CREATE TABLE Customer (
     CustomerID VARCHAR(10) PRIMARY KEY DEFAULT ('CUS' + RIGHT('0000' + CAST(NEXT VALUE FOR Seq_CustomerID AS VARCHAR(4)), 4)),
     Age INT NOT NULL CHECK (Age >= 18),
+    --Consider removing (Age >= 18)
     DateOfBirth DATE NOT NULL,
     CustomerName VARCHAR(100) NOT NULL,
     Email VARCHAR(100) NOT NULL UNIQUE,
@@ -24,6 +25,7 @@ CREATE TABLE Customer (
     IsActive BIT DEFAULT 1,
     LoyaltyPoints INT DEFAULT 0 CHECK (LoyaltyPoints >= 0),
     CONSTRAINT checkEmailFormat CHECK (Email LIKE '%_@gmail.com%')
+    --Should allow more types of email (eg: @hcmut.edu.vn) ?
 );
 
 -- Store Table
@@ -55,6 +57,7 @@ CREATE TABLE Employee (
 CREATE TABLE Product (
     ProductID VARCHAR(10) PRIMARY KEY DEFAULT ('PRO' + RIGHT('0000' + CAST(NEXT VALUE FOR Seq_ProductID AS VARCHAR(4)), 4)),
     ProductName VARCHAR(100) UNIQUE NOT NULL,
+    --UNIQUE for ProductName might be too strict
     ProductDescription VARCHAR(MAX),
     Price DECIMAL(10,2) NOT NULL CHECK (Price >= 0),
     StockQuantity INT DEFAULT 0 CHECK (StockQuantity >= 0),
@@ -69,6 +72,7 @@ CREATE TABLE Orders (
     StoreID VARCHAR(10) NOT NULL,
     TotalQty INT NOT NULL CHECK (TotalQty > 0),
     TotalAmount DECIMAL(10,2) CHECK (TotalAmount >= 0),
+    --TotalQty and TotalAmount should be computed, not stored!
     DateOrder DATETIME DEFAULT CURRENT_TIMESTAMP,
     OrderStatus VARCHAR(20) DEFAULT 'Pending'
         CHECK (OrderStatus IN ('Pending', 'Confirmed', 'Processing', 'Shipped', 'Delivered', 'Cancelled')),
@@ -86,4 +90,6 @@ CREATE TABLE OrderItem (
     PRIMARY KEY (OrderID, ProductID),
     FOREIGN KEY (OrderID) REFERENCES Orders(OrderID),
     FOREIGN KEY (ProductID) REFERENCES Product(ProductID)
+    --Consider adding FOREIGN KEY (OrderID) REFERENCES Orders(OrderID) ON DELETE CASCADE
+    --So when an order is deleted, its items are deleted automatically.
 );
