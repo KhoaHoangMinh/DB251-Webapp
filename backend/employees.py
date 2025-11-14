@@ -20,7 +20,7 @@ class SummaryStats(BaseModel):
     total_employees: int
     total_positions: int
     total_departments: int
-    total_salary: float
+    avg_salary: float
 
 class Employee_Update(BaseModel):
     Department: Optional[str] = None
@@ -38,10 +38,13 @@ def get_summary_stats(db : db_dependency) -> SummaryStats:
     if total_employees == 0 :
         return SummaryStats(total_employees = 0, total_positions = 0, total_departments = 0, total_salary = 0)
     else :
+        # TODO: convert this part to use SQL FUNCTION
         total_positions = db.query(Employee.Position).distinct().count()
         total_departments = db.query(Employee.Department).distinct().count()
         total_salary = db.query(func.sum(Employee.Salary)).scalar()
-        return SummaryStats(total_employees = total_employees, total_positions = total_positions, total_departments = total_departments, total_salary = total_salary)
+        avg_salary = round(total_salary / total_employees, 2)
+        return SummaryStats(total_employees = total_employees, total_positions = total_positions,
+                            total_departments = total_departments, avg_salary=avg_salary)
 
 @router.get("/{employee_id}")
 def view_employee(employee_id: str, db : db_dependency):
@@ -52,7 +55,8 @@ def view_employee(employee_id: str, db : db_dependency):
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 def create_employee(new_employee: Employees_Create, db: db_dependency):
-    db_employee = Employee(**new_employee.dict())
+    db_employee = Employee(**new_employee.model_dump())
+    # TODO: fix the conflict between models.py and CREATE.sql
     db.add(db_employee)
     db.commit()
     db.refresh(db_employee)
