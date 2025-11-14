@@ -70,8 +70,8 @@ def update_product(product_id: str, product_update: ProductUpdate, db: db_depend
         raise HTTPException(status_code=404, detail="Invalid product ID")
     if product_update.ProductName: product.ProductName = product_update.ProductName
     if product_update.ProductDescription: product.ProductDescription = product_update.ProductDescription
-    if product_update.ProductPrice: product.ProductPrice = product_update.ProductPrice
-    if product_update.ProductStock: product.ProductStock = product_update.ProductStock
+    if product_update.Price: product.Price = product_update.Price
+    if product_update.Stock: product.StockQuantity = product_update.Stock
     db.commit()
     db.refresh(product)
     return product
