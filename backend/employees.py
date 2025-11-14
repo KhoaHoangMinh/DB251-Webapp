@@ -36,7 +36,7 @@ def list_employees(db: db_dependency):
 def get_summary_stats(db : db_dependency) -> SummaryStats:
     total_employees = db.query(Employee).count()
     if total_employees == 0 :
-        return SummaryStats(total_employees = 0, total_positions = 0, total_departments = 0, total_salary = 0)
+        return SummaryStats(total_employees = 0, total_positions = 0, total_departments = 0, avg_salary=0)
     else :
         # TODO: convert this part to use SQL FUNCTION
         total_positions = db.query(Employee.Position).distinct().count()
