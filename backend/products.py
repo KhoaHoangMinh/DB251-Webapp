@@ -50,7 +50,7 @@ def view_product(product_id: str, db: db_dependency):
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
 def create_product(product: ProductCreate, db: db_dependency):
-    new_product = Product(**product.dict())
+    new_product = Product(**product.model_dump())
     db.add(new_product)
     db.commit()
     db.refresh(new_product)
