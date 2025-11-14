@@ -2,15 +2,17 @@ USE database_webapp;
 GO
 
 -- Trigger 1: Auto-update Loyalty Points After Order Insert --
+
 CREATE TRIGGER AddLoyaltyPoints
 ON Orders
 AFTER INSERT
 AS
 BEGIN
     UPDATE c
-    SET c.LoyaltyPoints = c.LoyaltyPoints + (i.TotalAmount / 1000)
+    SET c.LoyaltyPoints = c.LoyaltyPoints + (gs.TotalAmount / 1000)
     FROM Customer c
     JOIN inserted i ON c.CustomerID = i.CustomerID
+    CROSS APPLY dbo.GetOrderSummary(i.OrderID) gs
     WHERE i.OrderStatus IN ('Confirmed', 'Delivered');
 END;
 GO

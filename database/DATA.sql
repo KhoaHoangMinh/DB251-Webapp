@@ -37,14 +37,14 @@ INSERT INTO Product (ProductName, ProductDescription, Price, StockQuantity) VALU
 ('Nike Basketball Jersey', 'Authentic NBA-style basketball jersey', 120.00, 25),
 ('Nike Running Shorts', 'Lightweight running shorts with liner', 55.00, 60);
 
-INSERT INTO Orders (CustomerID, StoreID, TotalQty, TotalAmount, OrderStatus) VALUES
-('CUS0001', 'STO0001', 2, 220.00, 'Delivered'),
-('CUS0002', 'STO0002', 3, 270.00, 'Processing'),
-('CUS0003', 'STO0001', 1, 150.00, 'Shipped'),
-('CUS0004', 'STO0003', 4, 340.00, 'Confirmed'),
-('CUS0005', 'STO0002', 2, 90.00, 'Pending'),
-('CUS0006', 'STO0004', 1, 85.00, 'Delivered'),
-('CUS0001', 'STO0001', 3, 165.00, 'Processing');
+INSERT INTO Orders (CustomerID, StoreID, OrderStatus) VALUES
+('CUS0001', 'STO0001',  'Delivered'),
+('CUS0002', 'STO0002',  'Processing'),
+('CUS0003', 'STO0001',  'Shipped'),
+('CUS0004', 'STO0003',  'Confirmed'),
+('CUS0005', 'STO0002',  'Pending'),
+('CUS0006', 'STO0004', 'Delivered'),
+('CUS0001', 'STO0001',  'Processing');
 
 INSERT INTO OrderItem (OrderID, ProductID, Quantity, UnitPrice) VALUES
 ('ORD0001', 'PRO0001', 2, 110.00),

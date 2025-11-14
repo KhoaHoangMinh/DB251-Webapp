@@ -15,18 +15,13 @@ BEGIN
     SELECT TOP(@TopN)
         c.CustomerID,
         c.CustomerName,
-        SUM(o.TotalAmount) AS TotalSpent
+        dbo.GetCustomerTotalSpending(c.CustomerID) AS TotalSpent
     FROM Customer c
-    JOIN Orders o ON c.CustomerID = o.CustomerID
-    WHERE o.OrderStatus IN ('Confirmed', 'Delivered', 'Shipped')
-    GROUP BY c.CustomerID, c.CustomerName
-    HAVING SUM(o.TotalAmount) > 0
+    WHERE dbo.GetCustomerTotalSpending(c.CustomerID) > 0
     ORDER BY TotalSpent DESC;
 END;
 GO
 
-EXEC GetTopCustomers @TopN = 5;
-GO
 
 -- Procedure 2: Update Product Stock After Order --
 CREATE PROCEDURE UpdateStockAfterOrder
@@ -66,8 +61,6 @@ BEGIN
 END;
 GO
 
-EXEC UpdateStockAfterOrder 'ORD0001';
-GO
 
 -- Procedure 3: Get products detail of Order by OrderID --
 
@@ -86,8 +79,7 @@ BEGIN
         oi.Quantity,
         oi.UnitPrice,
         oi.LineTotal,
-        o.OrderStatus,
-        o.TotalAmount as OrderTotal
+        o.OrderStatus as OrderTotal
     FROM Orders o
     INNER JOIN OrderItem oi ON o.OrderID = oi.OrderID
     INNER JOIN Product p ON oi.ProductID = p.ProductID

@@ -13,17 +13,16 @@ BEGIN
         RETURN -1; -- invalid customer
     END
 
-    SELECT @TotalSpending = ISNULL(SUM(TotalAmount), 0)
-    FROM Orders
-    WHERE CustomerID = @CustomerID
-      AND OrderStatus IN ('Confirmed', 'Delivered', 'Shipped');
+    SELECT @TotalSpending = ISNULL(SUM(gs.TotalAmount), 0)
+    FROM Orders o
+    CROSS APPLY dbo.GetOrderSummary(o.OrderID) gs
+    WHERE o.CustomerID = @CustomerID
+      AND o.OrderStatus IN ('Confirmed', 'Delivered', 'Shipped');
 
     RETURN @TotalSpending;
 END;
 GO
 
-SELECT dbo.GetCustomerTotalSpending('CUS0001') AS TotalSpent;
-GO
 
 -- Function 2: Get Average Product Price by StoreID --
 
@@ -47,5 +46,19 @@ BEGIN
 END;
 GO
 
-SELECT dbo.GetAveragePriceByStore('STO0003') AS AvgPrice;
+--Function 3: Get Order Summary Stats by OrderID --
+
+CREATE FUNCTION GetOrderSummary(@OrderID VARCHAR(10))
+RETURNS TABLE
+AS
+RETURN
+(
+    SELECT
+        oi.OrderID,
+        SUM(oi.Quantity) AS TotalQuantity,
+        SUM(oi.Quantity * oi.UnitPrice) AS TotalAmount
+    FROM OrderItem oi
+    WHERE oi.OrderID = @OrderID
+    GROUP BY oi.OrderID
+)
 GO

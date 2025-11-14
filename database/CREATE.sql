@@ -69,9 +69,6 @@ CREATE TABLE Orders (
     OrderID VARCHAR(10) PRIMARY KEY DEFAULT ('ORD' + RIGHT('0000' + CAST(NEXT VALUE FOR Seq_OrderID AS VARCHAR(4)), 4)),
     CustomerID VARCHAR(10) NOT NULL,
     StoreID VARCHAR(10) NOT NULL,
-    TotalQty INT NOT NULL CHECK (TotalQty > 0),
-    TotalAmount DECIMAL(10,2) CHECK (TotalAmount >= 0),
-    --TotalQty and TotalAmount should be computed, not stored!
     DateOrder DATETIME DEFAULT CURRENT_TIMESTAMP,
     OrderStatus VARCHAR(20) DEFAULT 'Pending'
         CHECK (OrderStatus IN ('Pending', 'Confirmed', 'Processing', 'Shipped', 'Delivered', 'Cancelled')),

@@ -13,3 +13,14 @@ DROP SEQUENCE Seq_EmployeeID;
 DROP SEQUENCE Seq_OrderID;
 DROP SEQUENCE Seq_ProductID;
 DROP SEQUENCE Seq_StoreID;
+
+DROP FUNCTION GetCustomerTotalSpending;
+DROP FUNCTION GetAveragePriceByStore;
+DROP FUNCTION GetOrderSummary;
+
+DROP PROCEDURE GetTopCustomers;
+DROP PROCEDURE UpdateStockAfterOrder;
+DROP PROCEDURE GetOrderProductDetails;
+
+DROP TRIGGER AddLoyaltyPoints;
+DROP TRIGGER CheckManagerSalary;
