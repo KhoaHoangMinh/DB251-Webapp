@@ -46,9 +46,9 @@ def get_summary_stats(db : db_dependency) -> SummaryStats:
         return SummaryStats(total_employees = total_employees, total_positions = total_positions,
                             total_departments = total_departments, avg_salary=avg_salary)
 
-@router.get("/{employee_id}")
-def view_employee(employee_id: str, db : db_dependency):
-    employee = db.query(Employee).get(employee_id)
+@router.get("/{id}")
+def view_employee(id: str, db : db_dependency):
+    employee = db.query(Employee).get(id)
     if not employee:
         raise  HTTPException(status_code=404, detail="employee not found")
     return employee
@@ -62,16 +62,16 @@ def create_employee(new_employee: Employees_Create, db: db_dependency):
     db.refresh(db_employee)
     return db_employee
 
-@router.post("/create_bulk", status_code = status.HTTP_201_CREATED)
+@router.post("/bulk", status_code = status.HTTP_201_CREATED)
 def create_employees(employees: List[Employees_Create], db : db_dependency):
     created = []
     for employee in employees:
         created.append(create_employee(employee, db))
     return created
 
-@router.put("/{employee_id}")
-def update_employee(employee_id: str, employee : Employee_Update, db : db_dependency):
-    db_employee = db.query(Employee).filter(Employee.EmployeeID == employee_id).first()
+@router.put("/{id}")
+def update_employee(id: str, employee : Employee_Update, db : db_dependency):
+    db_employee = db.query(Employee).filter(Employee.EmployeeID == id).first()
     if not db_employee:
         raise HTTPException(status_code=404, detail="employee not found")
     if employee.Position: db_employee.Position = employee.Position
@@ -80,18 +80,18 @@ def update_employee(employee_id: str, employee : Employee_Update, db : db_depend
     db.refresh(db_employee)
     return db_employee
 
-@router.delete("/delete_bulk", status_code=status.HTTP_200_OK)
+@router.delete("/bulk", status_code=status.HTTP_200_OK)
 def delete_bulk(indexes : List[str] = Body(...), db : Session = Depends(get_db)):
     for index in indexes:
         delete_employee(index, db)
     return {"message": "success"}
 
-@router.delete("/{employee_id}")
-def delete_employee(employee_id: str, db : db_dependency):
-    db_employee = db.query(Employee).filter(Employee.EmployeeID == employee_id).first()
+@router.delete("/{id}")
+def delete_employee(id: str, db : db_dependency):
+    db_employee = db.query(Employee).filter(Employee.EmployeeID == id).first()
     if not db_employee:
         raise HTTPException(status_code=404, detail="employee not found")
     db.delete(db_employee)
     db.commit()
-    return {"message": f"Employee {employee_id} deleted successfully"}
+    return {"message": f"Employee {id} deleted successfully"}
 

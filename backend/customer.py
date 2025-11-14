@@ -43,9 +43,9 @@ def get_summary_stats(db : db_dependency) -> SummaryStats:
         avg_age = round(db.query(func.sum(Customer.Age)).scalar() / total_customers, 1)
         return SummaryStats(total_Customers = total_customers, avg_age=avg_age)
 
-@router.get("/{customer_id}")
-def view_Customer(customer_id: str, db : db_dependency):
-    customer = db.query(Customer).get(customer_id)
+@router.get("/{id}")
+def view_Customer(id: str, db : db_dependency):
+    customer = db.query(Customer).get(id)
     if not customer:
         raise  HTTPException(status_code=404, detail="Customer not found")
     return customer
@@ -59,16 +59,16 @@ def create_Customer(new_customer: Customers_Create, db: db_dependency):
     db.refresh(db_Customer)
     return db_Customer
 
-@router.post("/create_bulk", status_code = status.HTTP_201_CREATED)
+@router.post("/bulk", status_code = status.HTTP_201_CREATED)
 def create_Customers(customers: List[Customers_Create], db : db_dependency):
     created = []
     for Customer in customers:
         created.append(create_Customer(Customer, db))
     return created
 
-@router.put("/{customer_id}")
-def update_Customer(customer_id: str, customer : Customer_Update, db : db_dependency):
-    db_customer = db.query(Customer).filter(Customer.CustomerID == customer_id).first()
+@router.put("/{id}")
+def update_Customer(id: str, customer : Customer_Update, db : db_dependency):
+    db_customer = db.query(Customer).filter(Customer.CustomerID == id).first()
     if not db_customer:
         raise HTTPException(status_code=404, detail="Customer not found")
     if customer.CustomerName: db_customer.CustomerName = customer.CustomerName
@@ -80,17 +80,17 @@ def update_Customer(customer_id: str, customer : Customer_Update, db : db_depend
     db.refresh(db_customer)
     return db_customer
 
-@router.delete("/delete_bulk", status_code=status.HTTP_200_OK)
+@router.delete("/bulk", status_code=status.HTTP_200_OK)
 def delete_bulk(indexes : List[str] = Body(...), db : Session = Depends(get_db)):
     for index in indexes:
         delete_Customer(index, db)
     return {"message": "success"}
 
-@router.delete("/{customer_id}")
-def delete_Customer(customer_id: str, db : db_dependency):
-    db_customer = db.query(Customer).filter(Customer.CustomerID == customer_id).first()
+@router.delete("/{id}")
+def delete_Customer(id: str, db : db_dependency):
+    db_customer = db.query(Customer).filter(Customer.CustomerID == id).first()
     if not db_customer:
         raise HTTPException(status_code=404, detail="Customer not found")
     db.delete(db_customer)
     db.commit()
-    return {"message": f"Customer {customer_id} deleted successfully"}
+    return {"message": f"Customer {id} deleted successfully"}
