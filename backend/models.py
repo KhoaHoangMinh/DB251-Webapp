@@ -120,7 +120,7 @@ class OrderItem(Base):
     ProductID = Column(String(10), ForeignKey('Product.ProductID'), primary_key=True)
     Quantity = Column(Integer, nullable=False)
     UnitPrice = Column(DECIMAL(10, 2), nullable=False)
-    LineTotal = Column(DECIMAL(10, 2))
+    LineTotal = Column(DECIMAL(10, 2), computed='Quantity * UnitPrice')
 
     # Relationships
     order = relationship("Orders", back_populates="order_items")
