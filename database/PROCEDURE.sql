@@ -67,3 +67,35 @@ END;
 GO
 
 EXEC UpdateStockAfterOrder 'ORD0001';
+GO
+
+-- Procedure 3: Get products detail of Order by OrderID --
+
+CREATE PROCEDURE GetOrderProductDetails
+    @OrderID VARCHAR(10) = NULL  -- Optional parameter to filter by specific order
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT
+        o.OrderID,
+        o.DateOrder,
+        c.CustomerName,
+        s.StoreName,
+        p.ProductName,
+        oi.Quantity,
+        oi.UnitPrice,
+        oi.LineTotal,
+        o.OrderStatus,
+        o.TotalAmount as OrderTotal
+    FROM Orders o
+    INNER JOIN OrderItem oi ON o.OrderID = oi.OrderID
+    INNER JOIN Product p ON oi.ProductID = p.ProductID
+    INNER JOIN Customer c ON o.CustomerID = c.CustomerID
+    INNER JOIN Store s ON o.StoreID = s.StoreID
+    WHERE (@OrderID IS NULL OR o.OrderID = @OrderID)
+    ORDER BY o.DateOrder DESC, o.OrderID, p.ProductName;
+END;
+GO
+
+
