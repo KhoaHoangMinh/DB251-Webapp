@@ -16,7 +16,6 @@ GO
 CREATE TABLE Customer (
     CustomerID VARCHAR(10) PRIMARY KEY DEFAULT ('CUS' + RIGHT('0000' + CAST(NEXT VALUE FOR Seq_CustomerID AS VARCHAR(4)), 4)),
     Age INT NOT NULL CHECK (Age >= 18),
-    --Consider removing (Age >= 18)
     DateOfBirth DATE NOT NULL,
     CustomerName VARCHAR(100) NOT NULL,
     Email VARCHAR(100) NOT NULL UNIQUE,

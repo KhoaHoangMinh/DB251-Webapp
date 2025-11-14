@@ -1,132 +1,178 @@
-from sqlalchemy import Column, String, Integer, Date, DateTime, Time, Boolean, DECIMAL, Text, CheckConstraint, ForeignKey, Sequence
+from sqlalchemy import Column, String, Integer, Date, DateTime, Time, Boolean, DECIMAL, Text, CheckConstraint, \
+    ForeignKey, Sequence, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-import datetime
 from database import Base
 
 
+# ------------------------------------------------------------
+# CUSTOMER
+# ------------------------------------------------------------
 class Customer(Base):
     __tablename__ = "Customer"
 
-    CustomerID = Column(String(10), primary_key=True)
+    CustomerID = Column(
+        String(10),
+        primary_key=True,
+        server_default=text(
+            "('CUS' + RIGHT('0000' + CAST(NEXT VALUE FOR Seq_CustomerID AS VARCHAR(4)), 4))"
+        ),
+        nullable=False,
+    )
     Age = Column(Integer, nullable=False)
     DateOfBirth = Column(Date, nullable=False)
     CustomerName = Column(String(100), nullable=False)
-    Email = Column(String(100), nullable=False, unique=True)
-    Phone = Column(String(20), nullable=False, unique=True)
-    RegistrationDate = Column(DateTime, server_default=func.now())
-    IsActive = Column(Boolean, default=True)
-    LoyaltyPoints = Column(Integer, default=0)
-
-    # Relationships
-    orders = relationship("Orders", back_populates="customer")
+    Email = Column(String(100), unique=True, nullable=False)
+    Phone = Column(String(20), unique=True, nullable=False)
+    RegistrationDate = Column(DateTime, server_default=func.current_timestamp())
+    IsActive = Column(Boolean, server_default="1")
+    LoyaltyPoints = Column(Integer, nullable=False, server_default="0")
 
     __table_args__ = (
-        CheckConstraint('Age >= 18', name='check_age'),
-        CheckConstraint('LoyaltyPoints >= 0', name='check_loyalty_points'),
-        CheckConstraint("Email LIKE '%_@gmail.com%'", name='check_email_format'),
+        CheckConstraint("Age >= 18", name="checkAge"),
+        CheckConstraint("LoyaltyPoints >= 0", name="checkLoyaltyPoints"),
     )
 
+    orders = relationship("Orders", back_populates="customer", cascade="all, delete")
 
+
+# ------------------------------------------------------------
+# STORE
+# ------------------------------------------------------------
 class Store(Base):
     __tablename__ = "Store"
 
-    StoreID = Column(String(10), primary_key=True)
+    StoreID = Column(
+        String(10),
+        primary_key=True,
+        server_default=text(
+            "('STO' + RIGHT('0000' + CAST(NEXT VALUE FOR Seq_StoreID AS VARCHAR(4)), 4))"
+        ),
+        nullable=False,
+    )
     StoreName = Column(String(100), nullable=False)
-    StoreAddress = Column(String(255), nullable=False, unique=True)
+    StoreAddress = Column(String(255), unique=True, nullable=False)
     OpeningHour = Column(Time, nullable=False)
     ClosingHour = Column(Time, nullable=False)
-    PhoneNumber = Column(String(20), nullable=False, unique=True)
+    PhoneNumber = Column(String(20), unique=True, nullable=False)
     Email = Column(String(100))
-    IsActive = Column(Boolean, default=True)
-
-    # Relationships
-    employees = relationship("Employee", back_populates="store")
-    orders = relationship("Orders", back_populates="store")
+    IsActive = Column(Boolean, server_default="1")
 
     __table_args__ = (
-        CheckConstraint('ClosingHour > OpeningHour', name='check_hours'),
+        CheckConstraint("ClosingHour > OpeningHour", name="checkHours"),
     )
 
+    employees = relationship("Employee", back_populates="store", cascade="all, delete")
+    orders = relationship("Orders", back_populates="store", cascade="all, delete")
 
+
+# ------------------------------------------------------------
+# EMPLOYEE
+# ------------------------------------------------------------
 class Employee(Base):
     __tablename__ = "Employee"
 
-    EmployeeID = Column(String(10), primary_key=True)
+    EmployeeID = Column(
+        String(10),
+        primary_key=True,
+        server_default=text(
+            "('EMP' + RIGHT('0000' + CAST(NEXT VALUE FOR Seq_EmployeeID AS VARCHAR(4)), 4))"
+        ),
+        nullable=False,
+    )
     EmployeeName = Column(String(100), nullable=False)
-    StoreID = Column(String(10), ForeignKey('Store.StoreID'), nullable=False)
+    StoreID = Column(String(10), ForeignKey("Store.StoreID", ondelete="CASCADE"), nullable=False)
     Department = Column(String(50), nullable=False)
     Position = Column(String(50), nullable=False)
-    IsActive = Column(Boolean, default=True)
+    IsActive = Column(Boolean, server_default="1")
     Salary = Column(DECIMAL(10, 2))
 
-    # Relationships
-    store = relationship("Store", back_populates="employees")
-
     __table_args__ = (
-        CheckConstraint('Salary >= 0', name='check_salary'),
+        CheckConstraint("Salary >= 0", name="checkSalary"),
     )
 
+    store = relationship("Store", back_populates="employees")
 
+
+# ------------------------------------------------------------
+# PRODUCT
+# ------------------------------------------------------------
 class Product(Base):
     __tablename__ = "Product"
 
-    ProductID = Column(String(10), primary_key=True)
-    ProductName = Column(String(100), nullable=False, unique=True)
+    ProductID = Column(
+        String(10),
+        primary_key=True,
+        server_default=text(
+            "('PRO' + RIGHT('0000' + CAST(NEXT VALUE FOR Seq_ProductID AS VARCHAR(4)), 4))"
+        ),
+        nullable=False,
+    )
+    ProductName = Column(String(100), unique=True, nullable=False)
     ProductDescription = Column(Text)
     Price = Column(DECIMAL(10, 2), nullable=False)
-    StockQuantity = Column(Integer, default=0)
-    IsActive = Column(Boolean, default=True)
-    CreatedDate = Column(DateTime, server_default=func.now())
-
-    # Relationships
-    order_items = relationship("OrderItem", back_populates="product")
+    StockQuantity = Column(Integer, server_default="0")
+    IsActive = Column(Boolean, server_default="1")
+    CreatedDate = Column(DateTime, server_default=func.current_timestamp())
 
     __table_args__ = (
-        CheckConstraint('Price >= 0', name='check_price'),
-        CheckConstraint('StockQuantity >= 0', name='check_stock_quantity'),
+        CheckConstraint("Price >= 0", name="checkPrice"),
+        CheckConstraint("StockQuantity >= 0", name="checkStockQuantity"),
     )
 
+    order_items = relationship("OrderItem", back_populates="product", cascade="all, delete")
 
+
+# ------------------------------------------------------------
+# ORDERS
+# ------------------------------------------------------------
 class Orders(Base):
     __tablename__ = "Orders"
 
-    OrderID = Column(String(10), primary_key=True)
-    CustomerID = Column(String(10), ForeignKey('Customer.CustomerID'), nullable=False)
-    StoreID = Column(String(10), ForeignKey('Store.StoreID'), nullable=False)
-    TotalQty = Column(Integer, nullable=False)
-    TotalAmount = Column(DECIMAL(10, 2))
-    DateOrder = Column(DateTime, server_default=func.now())
-    OrderStatus = Column(String(20), default='Pending')
-
-    # Relationships
-    customer = relationship("Customer", back_populates="orders")
-    store = relationship("Store", back_populates="orders")
-    order_items = relationship("OrderItem", back_populates="order")
-
-    __table_args__ = (
-        CheckConstraint('TotalQty > 0', name='check_total_qty'),
-        CheckConstraint('TotalAmount >= 0', name='check_total_amount'),
-        CheckConstraint("OrderStatus IN ('Pending', 'Confirmed', 'Processing', 'Shipped', 'Delivered', 'Cancelled')",
-                        name='check_order_status'),
+    OrderID = Column(
+        String(10),
+        primary_key=True,
+        server_default=text(
+            "('ORD' + RIGHT('0000' + CAST(NEXT VALUE FOR Seq_OrderID AS VARCHAR(4)), 4))"
+        ),
+        nullable=False,
+    )
+    CustomerID = Column(String(10), ForeignKey("Customer.CustomerID", ondelete="CASCADE"), nullable=False)
+    StoreID = Column(String(10), ForeignKey("Store.StoreID", ondelete="CASCADE"), nullable=False)
+    DateOrder = Column(DateTime, server_default=func.current_timestamp())
+    OrderStatus = Column(
+        String(20),
+        server_default="Pending"
     )
 
+    __table_args__ = (
+        CheckConstraint("OrderStatus IN "
+                        "('Pending','Confirmed','Processing','Shipped','Delivered','Cancelled')",
+                        name="checkStatus"),
+    )
 
+    customer = relationship("Customer", back_populates="orders")
+    store = relationship("Store", back_populates="orders")
+    items = relationship("OrderItem", back_populates="order", cascade="all, delete")
+
+
+# ------------------------------------------------------------
+# ORDER ITEM
+# ------------------------------------------------------------
 class OrderItem(Base):
     __tablename__ = "OrderItem"
 
-    OrderID = Column(String(10), ForeignKey('Orders.OrderID'), primary_key=True)
-    ProductID = Column(String(10), ForeignKey('Product.ProductID'), primary_key=True)
+    OrderID = Column(String(10), ForeignKey("Orders.OrderID", ondelete="CASCADE"), primary_key=True)
+    ProductID = Column(String(10), ForeignKey("Product.ProductID", ondelete="CASCADE"), primary_key=True)
     Quantity = Column(Integer, nullable=False)
     UnitPrice = Column(DECIMAL(10, 2), nullable=False)
-    LineTotal = Column(DECIMAL(10, 2), computed='Quantity * UnitPrice')
-
-    # Relationships
-    order = relationship("Orders", back_populates="order_items")
-    product = relationship("Product", back_populates="order_items")
+    LineTotal = Column(DECIMAL(10, 2))
 
     __table_args__ = (
-        CheckConstraint('Quantity > 0', name='check_quantity'),
-        CheckConstraint('UnitPrice >= 0', name='check_unit_price'),
+        CheckConstraint("Quantity > 0", name="checkQuantity"),
+        CheckConstraint("UnitPrice >= 0", name="checkUnitPrice"),
     )
+
+    order = relationship("Orders", back_populates="items")
+    product = relationship("Product", back_populates="order_items")

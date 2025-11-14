@@ -1,8 +1,15 @@
 USE database_webapp;
 
+
+DROP TABLE OrderItem;
+DROP TABLE Employee;
 DROP TABLE Orders;
 DROP TABLE Product;
-DROP TABLE Employee;
 DROP TABLE Store;
-DROP TABLE OrderItem;
 DROP TABLE Customer;
+
+DROP SEQUENCE Seq_CustomerID;
+DROP SEQUENCE Seq_EmployeeID;
+DROP SEQUENCE Seq_OrderID;
+DROP SEQUENCE Seq_ProductID;
+DROP SEQUENCE Seq_StoreID;
