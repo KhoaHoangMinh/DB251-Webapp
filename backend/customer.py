@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Body, Depends
 from typing import Optional, List
 from pydantic import BaseModel
-from sqlalchemy import func
+from sqlalchemy import func, text
 from sqlalchemy.orm import Session
 
 from database import get_db, db_dependency
@@ -28,6 +28,11 @@ class CustomerUpdate(BaseModel):
     Phone: Optional[int] = None
     IsActive: Optional[bool] = None
     LoyaltyPoints: Optional[int] = None
+
+class CustomerSpending(BaseModel):
+    CustomerID: str
+    CustomerName: str
+    TotalSpent: float
 
 @router.get("/")
 def list_customers(db: db_dependency):
@@ -73,7 +78,7 @@ def update_customer(id: str, customer : CustomerUpdate, db : db_dependency):
     if customer.CustomerName: db_customer.CustomerName = customer.CustomerName
     if customer.DateOfBirth: db_customer.DateOfBirth = customer.DateOfBirth
     if customer.Phone: db_customer.Phone = customer.Phone
-    if customer.IsActive is not None: db_customer.IsActive = customer.IsActive
+    if customer.IsActive: db_customer.IsActive = customer.IsActive
     if customer.LoyaltyPoints: db_customer.LoyaltyPoints = customer.LoyaltyPoints
     db.commit()
     db.refresh(db_customer)
@@ -93,3 +98,31 @@ def delete_customer(id: str, db : db_dependency):
     db.delete(db_customer)
     db.commit()
     return {"message": f"Customer {id} deleted successfully"}
+
+@router.get("/total_spending/{id}", response_model=float)
+def get_customer_total_spending(id: str, db : db_dependency):
+    try:
+        query = text("SELECT dbo.GetCustomerTotalSpending(:id)")
+        result = db.execute(query, {"id": id}).scalar()
+
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/top_customers/{top}")
+def get_top_customer(top: int, db : db_dependency):
+    try:
+        query = text("EXEC dbo.GetTopCustomers @TopN=:top")
+        result = db.execute(query, {"top": top}).fetchall()
+
+        top_customers = []
+        for row in result:
+            top_customers.append(CustomerSpending(
+                CustomerID=row[0],
+                CustomerName=row[1],
+                TotalSpent=row[2],
+            ))
+
+        return top_customers
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

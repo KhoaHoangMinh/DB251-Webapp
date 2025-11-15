@@ -75,6 +75,7 @@ def update_employee(id: str, employee : EmployeeUpdate, db : db_dependency):
         raise HTTPException(status_code=404, detail="employee not found")
     if employee.Position: db_employee.Position = employee.Position
     if employee.Department: db_employee.Department = employee.Department
+    if employee.Salary: db_employee.Salary = employee.Salary
     db.commit()
     db.refresh(db_employee)
     return db_employee
