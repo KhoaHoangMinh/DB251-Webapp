@@ -9,7 +9,7 @@ from models import Employee
 
 router = APIRouter(prefix="/employees", tags=["Employees"])
 
-class Employees_Create(BaseModel):
+class EmployeesCreate(BaseModel):
     EmployeeName: str
     StoreID: str
     Department: str
@@ -22,7 +22,7 @@ class SummaryStats(BaseModel):
     total_departments: int
     avg_salary: float
 
-class Employee_Update(BaseModel):
+class EmployeeUpdate(BaseModel):
     Department: Optional[str] = None
     Position: Optional[str] = None
     Salary: Optional[float] = None
@@ -54,23 +54,22 @@ def view_employee(id: str, db : db_dependency):
     return employee
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-def create_employee(new_employee: Employees_Create, db: db_dependency):
+def create_employee(new_employee: EmployeesCreate, db: db_dependency):
     db_employee = Employee(**new_employee.model_dump())
-    # TODO: fix the conflict between models.py and CREATE.sql
     db.add(db_employee)
     db.commit()
     db.refresh(db_employee)
     return db_employee
 
 @router.post("/bulk", status_code = status.HTTP_201_CREATED)
-def create_employees(employees: List[Employees_Create], db : db_dependency):
+def create_employees(employees: List[EmployeesCreate], db : db_dependency):
     created = []
     for employee in employees:
         created.append(create_employee(employee, db))
     return created
 
 @router.put("/{id}")
-def update_employee(id: str, employee : Employee_Update, db : db_dependency):
+def update_employee(id: str, employee : EmployeeUpdate, db : db_dependency):
     db_employee = db.query(Employee).filter(Employee.EmployeeID == id).first()
     if not db_employee:
         raise HTTPException(status_code=404, detail="employee not found")

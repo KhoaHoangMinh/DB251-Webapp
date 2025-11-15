@@ -9,7 +9,7 @@ from models import Customer
 
 router = APIRouter(prefix="/customers", tags=["Customers"])
 
-class Customers_Create(BaseModel):
+class CustomersCreate(BaseModel):
     Age: int
     CustomerName: str
     Email: str
@@ -22,7 +22,7 @@ class SummaryStats(BaseModel):
     total_Customers: int
     avg_age: float
 
-class Customer_Update(BaseModel):
+class CustomerUpdate(BaseModel):
     CustomerName: Optional[str] = None
     DateOfBirth: Optional[str] = None
     Phone: Optional[int] = None
@@ -30,7 +30,7 @@ class Customer_Update(BaseModel):
     LoyaltyPoints: Optional[int] = None
 
 @router.get("/")
-def list_Customers(db: db_dependency):
+def list_customers(db: db_dependency):
     return db.query(Customer).all()
 
 @router.get("/stats", response_model=SummaryStats)
@@ -44,30 +44,29 @@ def get_summary_stats(db : db_dependency) -> SummaryStats:
         return SummaryStats(total_Customers = total_customers, avg_age=avg_age)
 
 @router.get("/{id}")
-def view_Customer(id: str, db : db_dependency):
+def view_customer(id: str, db : db_dependency):
     customer = db.query(Customer).get(id)
     if not customer:
         raise  HTTPException(status_code=404, detail="Customer not found")
     return customer
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-def create_Customer(new_customer: Customers_Create, db: db_dependency):
-    db_Customer = Customer(**new_customer.model_dump())
-    # TODO: fix the conflict between models.py and CREATE.sql
-    db.add(db_Customer)
+def create_customer(new_customer: CustomersCreate, db: db_dependency):
+    db_customer = Customer(**new_customer.model_dump())
+    db.add(db_customer)
     db.commit()
-    db.refresh(db_Customer)
-    return db_Customer
+    db.refresh(db_customer)
+    return db_customer
 
 @router.post("/bulk", status_code = status.HTTP_201_CREATED)
-def create_Customers(customers: List[Customers_Create], db : db_dependency):
+def create_customers(customers: List[CustomersCreate], db : db_dependency):
     created = []
-    for Customer in customers:
-        created.append(create_Customer(Customer, db))
+    for customer in customers:
+        created.append(create_customer(customer, db))
     return created
 
 @router.put("/{id}")
-def update_Customer(id: str, customer : Customer_Update, db : db_dependency):
+def update_customer(id: str, customer : CustomerUpdate, db : db_dependency):
     db_customer = db.query(Customer).filter(Customer.CustomerID == id).first()
     if not db_customer:
         raise HTTPException(status_code=404, detail="Customer not found")
@@ -83,11 +82,11 @@ def update_Customer(id: str, customer : Customer_Update, db : db_dependency):
 @router.delete("/bulk", status_code=status.HTTP_200_OK)
 def delete_bulk(indexes : List[str] = Body(...), db : Session = Depends(get_db)):
     for index in indexes:
-        delete_Customer(index, db)
+        delete_customer(index, db)
     return {"message": "success"}
 
 @router.delete("/{id}")
-def delete_Customer(id: str, db : db_dependency):
+def delete_customer(id: str, db : db_dependency):
     db_customer = db.query(Customer).filter(Customer.CustomerID == id).first()
     if not db_customer:
         raise HTTPException(status_code=404, detail="Customer not found")
