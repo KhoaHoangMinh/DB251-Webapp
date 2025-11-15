@@ -8,6 +8,7 @@ from fastapi.responses import FileResponse
 from products import router as product_router
 from employees import router as employee_router
 from customer import router as customer_router
+from order import router as order_router
 
 import models
 from database import engine, SessionLocal
@@ -36,6 +37,7 @@ app.add_middleware(
 app.include_router(product_router)
 app.include_router(employee_router)
 app.include_router(customer_router)
+app.include_router(order_router)
 
 # Mount static files
 # app.mount("/static", StaticFiles(directory="static"), name="static")
