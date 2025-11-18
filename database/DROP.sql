@@ -24,3 +24,7 @@ DROP PROCEDURE GetOrderProductDetails;
 
 DROP TRIGGER AddLoyaltyPoints;
 DROP TRIGGER CheckManagerSalary;
+
+use master go
+alter database database_webapp set single_user with rollback immediate
+drop database database_webapp
