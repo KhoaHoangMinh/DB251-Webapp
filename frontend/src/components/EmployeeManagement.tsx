@@ -31,9 +31,23 @@ export default function EmployeeManagement() {
     }
   };
 
+  const searchEmployees = async (term: string) => {
+    try {
+      const response = await fetch(`http://localhost:8000/employees/search?search=${encodeURIComponent(term)}`); // Adjust URL if needed
+      const data = await response.json();
+      setEmployees(data);
+    } catch (error) {
+      console.error('Error searching employees:', error);
+    }
+  };
+
   useEffect(() => {
-    fetchEmployees();
-  }, []);
+    if (searchTerm.trim() === '') {
+      fetchEmployees();
+    } else {
+      searchEmployees(searchTerm);
+    }
+  }, [searchTerm]);
 
   const handleAddEmployee = () => {
     setSelectedEmployee(null);
@@ -101,7 +115,7 @@ export default function EmployeeManagement() {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           <Input
             type="text"
-            placeholder="Search by ID, name, email, department, or position..."
+            placeholder="Search by ID, name, department, or position..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -111,7 +125,7 @@ export default function EmployeeManagement() {
 
       {/* Employee Table */}
       <EmployeeTable
-        employees={filteredEmployees}
+        employees={employees}
         onEdit={handleEditEmployee}
         onDelete={handleDeleteEmployee}
       />
