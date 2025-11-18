@@ -1,6 +1,6 @@
 import { Button } from './ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { LogOut, Users, Package } from 'lucide-react';
+import { LogOut, Users, Package, CircleUser, ShoppingCart, Building} from 'lucide-react';
 import EmployeeManagement from './EmployeeManagement';
 import ProductManagement from './ProductManagement';
 
@@ -31,7 +31,7 @@ export default function MainManagement({ currentUser, onLogout }: MainManagement
       {/* Main Content with Tabs */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs defaultValue="employees" className="w-full">
-          <TabsList className="grid w-full max-w-md mb-6" style={{ gridTemplateColumns: '1fr 1fr' }}>
+          <TabsList className="grid w-full max-w-2xl mb-6" style={{ gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr' }}>
             <TabsTrigger value="employees" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
               Employees
@@ -40,15 +40,36 @@ export default function MainManagement({ currentUser, onLogout }: MainManagement
               <Package className="w-4 h-4" />
               Products
             </TabsTrigger>
+            <TabsTrigger value="customers" className="flex items-center gap-2">
+              <CircleUser className="w-4 h-4" />
+              Customers
+            </TabsTrigger>
+            <TabsTrigger value="orders" className="flex items-center gap-2">
+              <ShoppingCart className="w-4 h-4" />
+              Orders
+            </TabsTrigger>
+            <TabsTrigger value="storess" className="flex items-center gap-2">
+              <Building className="w-4 h-4" />
+              Stores
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="employees">
             <EmployeeManagement />
           </TabsContent>
-
           <TabsContent value="products">
             <ProductManagement />
           </TabsContent>
+          <TabsContent value="customers">
+            <ProductManagement />
+          </TabsContent>
+          <TabsContent value="orders">
+            <ProductManagement />
+          </TabsContent>
+          <TabsContent value="stores">
+            <ProductManagement />
+          </TabsContent>
+
         </Tabs>
       </main>
     </div>
