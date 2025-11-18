@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Plus, Search } from 'lucide-react';
+import {Plus, RefreshCcw, Search} from 'lucide-react';
 import ProductTable from './ProductTable';
 import ProductDialog from './ProductDialog';
 
@@ -31,11 +31,21 @@ export default function ProductManagement() {
     }
   };
 
+  const searchProducts = async (term: string) => {
+    try {
+      const response = await fetch(`http://localhost:8000/products/search?search=${encodeURIComponent(term)}`);
+      const data = await response.json();
+      setProducts(data);
+    } catch (error) {
+      console.error('Error searching products:', error);
+    }
+  };
+
   useEffect(() => {
     if (searchTerm.trim() === '') {
       fetchProducts();
     } else {
-
+      searchProducts(searchTerm);
     }
 
   }, [searchTerm]);
@@ -54,18 +64,47 @@ export default function ProductManagement() {
     setProducts(products.filter(prod => prod.productID !== id));
   };
 
-  const handleSaveProduct = (product: Product) => {
+  const handleSaveProduct = async (product: Product) => {
     if (selectedProduct) {
       // Update existing product
-      setProducts(products.map(prod => prod.productID === product.productID ? product : prod));
+      try {
+        const response = await fetch(`http://localhost:8000/products/${product.productID}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(product),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update product');
+        }
+
+        const updatedProduct = await response.json();
+        setProducts(products.map(prod => prod.productID === updatedProduct.productID ? updatedProduct : prod));
+      } catch (error) {
+        console.error('Error updating product:', error);
+      }
     } else {
       // Add new product
-      const newProduct = {
-        ...product,
-        productID: Date.now().toString(),
-        createdDate: new Date().toISOString(),
-      };
-      setProducts([...products, newProduct]);
+      try {
+        const response = await fetch('http://localhost:8000/products/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(product),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to create product');
+        }
+
+        const newProduct = await response.json();
+        setProducts([...products, newProduct]);
+      } catch (error) {
+        console.error('Error creating product:', error);
+      }
     }
     setIsDialogOpen(false);
   };
@@ -89,10 +128,18 @@ export default function ProductManagement() {
               Manage product inventory and information
             </p>
           </div>
-          <Button onClick={handleAddProduct}>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Product
-          </Button>
+
+          <div className="flex gap-4">
+            <Button onClick={handleAddProduct}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Product
+            </Button>
+            <Button onClick={fetchProducts}>
+              <RefreshCcw className="w-4 h-4 mr-2" />
+              Refresh
+            </Button>
+          </div>
+
         </div>
 
         {/* Search Bar */}
@@ -110,7 +157,7 @@ export default function ProductManagement() {
 
       {/* Product Table */}
       <ProductTable
-        products={filteredProducts}
+        products={products}
         onEdit={handleEditProduct}
         onDelete={handleDeleteProduct}
       />

@@ -34,7 +34,9 @@ def get_summary_stats(db: db_dependency) -> SummaryStats:
     return SummaryStats(total_products=total_products)
 
 def search_cond(a, b):
-    return a.lower() in b.productName.lower() or a.lower() in b.productDescription.lower()
+    return (a.lower() in b.productID.lower()
+            or a.lower() in b.productName.lower()
+            or a.lower() in b.productDescription.lower())
 @router.get("/search")
 def search_product(search: str, db: db_dependency):
     products = list(db.query(Product).all())
@@ -68,10 +70,14 @@ def update_product(product_id: str, product_update: ProductUpdate, db: db_depend
     product = db.query(Product).filter(Product.productID == product_id).first()
     if not product:
         raise HTTPException(status_code=404, detail="Invalid product ID")
-    if product_update.productName: product.productName = product_update.productName
-    if product_update.productDescription: product.productDescription = product_update.productDescription
-    if product_update.price: product.price = product_update.price
-    if product_update.stock: product.stockQuantity = product_update.stock
+    if product_update.productName and product.productName != product_update.productName:
+        product.productName = product_update.productName
+    if product_update.productDescription and product.productDescription != product_update.productDescription:
+        product.productDescription = product_update.productDescription
+    if product_update.price and product.price != product_update.price:
+        product.price = product_update.price
+    if product_update.stock and product.stockQuantity != product_update.stock:
+        product.stockQuantity = product_update.stock
     db.commit()
     db.refresh(product)
     return product

@@ -15,31 +15,27 @@ import {
 } from './ui/alert-dialog';
 
 interface Product {
-  id: string;
-  productId: string;
+  productID: string;
   productName: string;
-  category: string;
-  description: string;
+  productDescription: string;
   price: number;
   stockQuantity: number;
-  supplier: string;
-  sku: string;
-  dateAdded: string;
-  status: 'Active' | 'Discontinued';
+  isActive: boolean;
+  createdDate: string;
 }
 
 interface ProductTableProps {
   products: Product[];
   onEdit: (product: Product) => void;
-  onDelete: (id: string) => void;
+  onDelete: (productID: string) => void;
 }
 
-type SortField = 'productId' | 'productName' | 'category' | 'price' | 'stockQuantity' | 'dateAdded';
+type SortField = 'productID' | 'productName' | 'price' | 'stockQuantity' | 'createdDate';
 type SortOrder = 'asc' | 'desc';
 
 export default function ProductTable({ products, onEdit, onDelete }: ProductTableProps) {
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [sortField, setSortField] = useState<SortField>('productId');
+  const [sortField, setSortField] = useState<SortField>('productID');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
   const handleSort = (field: SortField) => {
@@ -94,13 +90,10 @@ export default function ProductTable({ products, onEdit, onDelete }: ProductTabl
             <TableHeader>
               <TableRow>
                 <TableHead>
-                  <SortButton field="productId">Product ID</SortButton>
+                  <SortButton field="productID">Product ID</SortButton>
                 </TableHead>
                 <TableHead>
                   <SortButton field="productName">Product Name</SortButton>
-                </TableHead>
-                <TableHead>
-                  <SortButton field="category">Category</SortButton>
                 </TableHead>
                 <TableHead>Description</TableHead>
                 <TableHead>
@@ -109,10 +102,8 @@ export default function ProductTable({ products, onEdit, onDelete }: ProductTabl
                 <TableHead>
                   <SortButton field="stockQuantity">Stock</SortButton>
                 </TableHead>
-                <TableHead>Supplier</TableHead>
-                <TableHead>SKU</TableHead>
                 <TableHead>
-                  <SortButton field="dateAdded">Date Added</SortButton>
+                  <SortButton field="createdDate">Created Date</SortButton>
                 </TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -121,18 +112,17 @@ export default function ProductTable({ products, onEdit, onDelete }: ProductTabl
             <TableBody>
               {sortedProducts.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={11} className="text-center py-8 text-gray-500">
+                  <TableCell colSpan={8} className="text-center py-8 text-gray-500">
                     No products found. Try adjusting your search criteria.
                   </TableCell>
                 </TableRow>
               ) : (
                 sortedProducts.map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell>{product.productId}</TableCell>
+                  <TableRow key={product.productID}>
+                    <TableCell>{product.productID}</TableCell>
                     <TableCell>{product.productName}</TableCell>
-                    <TableCell>{product.category}</TableCell>
                     <TableCell className="max-w-xs truncate">
-                      {product.description}
+                      {product.productDescription}
                     </TableCell>
                     <TableCell>${product.price.toFixed(2)}</TableCell>
                     <TableCell>
@@ -140,14 +130,12 @@ export default function ProductTable({ products, onEdit, onDelete }: ProductTabl
                         {product.stockQuantity}
                       </span>
                     </TableCell>
-                    <TableCell>{product.supplier}</TableCell>
-                    <TableCell>{product.sku}</TableCell>
                     <TableCell>
-                      {new Date(product.dateAdded).toLocaleDateString()}
+                      {new Date(product.createdDate).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={product.status === 'Active' ? 'default' : 'secondary'}>
-                        {product.status}
+                      <Badge variant={product.isActive ? 'default' : 'secondary'}>
+                        {product.isActive ? 'Active' : 'Inactive'}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
@@ -163,7 +151,7 @@ export default function ProductTable({ products, onEdit, onDelete }: ProductTabl
                         <Button
                           variant="destructive"
                           size="sm"
-                          onClick={() => handleDeleteClick(product.id)}
+                          onClick={() => handleDeleteClick(product.productID)}
                         >
                           <Trash2 className="w-4 h-4 mr-1" />
                           Delete
