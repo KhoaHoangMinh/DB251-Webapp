@@ -17,7 +17,7 @@ import {
 interface Employee {
   employeeID: string;
   employeeName: string;
-  storeId: string;
+  storeID: string;
   department: string;
   position: string;
   isActive: boolean;
@@ -30,7 +30,7 @@ interface EmployeeTableProps {
   onDelete: (employeeID: string) => void;
 }
 
-type SortField = 'employeeID' | 'employeeName' | 'storeId' | 'department' | 'position' | 'salary';
+type SortField = 'employeeID' | 'employeeName' | 'storeID' | 'department' | 'position' | 'salary';
 type SortOrder = 'asc' | 'desc';
 
 export default function EmployeeTable({ employees, onEdit, onDelete }: EmployeeTableProps) {
@@ -96,7 +96,7 @@ export default function EmployeeTable({ employees, onEdit, onDelete }: EmployeeT
                   <SortButton field="employeeName">Name</SortButton>
                 </TableHead>
                 <TableHead>
-                  <SortButton field="storeId">Store ID</SortButton>
+                  <SortButton field="storeID">Store ID</SortButton>
                 </TableHead>
                 <TableHead>
                   <SortButton field="department">Department</SortButton>
@@ -123,7 +123,7 @@ export default function EmployeeTable({ employees, onEdit, onDelete }: EmployeeT
                   <TableRow key={employee.employeeID}>
                     <TableCell>{employee.employeeID}</TableCell>
                     <TableCell>{employee.employeeName}</TableCell>
-                    <TableCell>{employee.storeId}</TableCell>
+                    <TableCell>{employee.storeID}</TableCell>
                     <TableCell>{employee.department}</TableCell>
                     <TableCell>{employee.position}</TableCell>
                     <TableCell>${employee.salary.toLocaleString()}</TableCell>
