@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import {useEffect, useState} from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Plus, Search } from 'lucide-react';
@@ -6,106 +6,39 @@ import ProductTable from './ProductTable';
 import ProductDialog from './ProductDialog';
 
 interface Product {
-  id: string;
-  productId: string;
+  productID: string;
   productName: string;
-  category: string;
-  description: string;
+  productDescription: string;
   price: number;
   stockQuantity: number;
-  supplier: string;
-  sku: string;
-  dateAdded: string;
-  status: 'Active' | 'Discontinued';
+  isActive: boolean;
+  createdDate: string;
 }
 
-// Mock product data
-const initialProducts: Product[] = [
-  {
-    id: '1',
-    productId: 'PRD001',
-    productName: 'Wireless Mouse',
-    category: 'Electronics',
-    description: 'Ergonomic wireless mouse with USB receiver',
-    price: 29.99,
-    stockQuantity: 150,
-    supplier: 'Tech Supplies Inc.',
-    sku: 'WM-2024-001',
-    dateAdded: '2024-01-10',
-    status: 'Active'
-  },
-  {
-    id: '2',
-    productId: 'PRD002',
-    productName: 'USB-C Cable',
-    category: 'Accessories',
-    description: '6ft braided USB-C charging cable',
-    price: 12.99,
-    stockQuantity: 300,
-    supplier: 'Cable World',
-    sku: 'UC-2024-002',
-    dateAdded: '2024-02-15',
-    status: 'Active'
-  },
-  {
-    id: '3',
-    productId: 'PRD003',
-    productName: 'Mechanical Keyboard',
-    category: 'Electronics',
-    description: 'RGB mechanical keyboard with blue switches',
-    price: 89.99,
-    stockQuantity: 75,
-    supplier: 'Tech Supplies Inc.',
-    sku: 'MK-2024-003',
-    dateAdded: '2024-03-20',
-    status: 'Active'
-  },
-  {
-    id: '4',
-    productId: 'PRD004',
-    productName: 'Desk Lamp',
-    category: 'Furniture',
-    description: 'Adjustable LED desk lamp with touch control',
-    price: 45.50,
-    stockQuantity: 60,
-    supplier: 'Office Essentials Ltd.',
-    sku: 'DL-2024-004',
-    dateAdded: '2023-11-05',
-    status: 'Active'
-  },
-  {
-    id: '5',
-    productId: 'PRD005',
-    productName: 'Notebook Set',
-    category: 'Stationery',
-    description: 'Pack of 5 spiral notebooks, A5 size',
-    price: 15.99,
-    stockQuantity: 200,
-    supplier: 'Paper Products Co.',
-    sku: 'NB-2024-005',
-    dateAdded: '2024-01-25',
-    status: 'Active'
-  },
-  {
-    id: '6',
-    productId: 'PRD006',
-    productName: 'Monitor Stand',
-    category: 'Furniture',
-    description: 'Wooden monitor stand with storage drawer',
-    price: 39.99,
-    stockQuantity: 45,
-    supplier: 'Office Essentials Ltd.',
-    sku: 'MS-2024-006',
-    dateAdded: '2023-12-10',
-    status: 'Active'
-  }
-];
-
 export default function ProductManagement() {
-  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [products, setProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/products');
+      const data = await  response.json();
+      setProducts(data);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      fetchProducts();
+    } else {
+
+    }
+
+  }, [searchTerm]);
 
   const handleAddProduct = () => {
     setSelectedProduct(null);
@@ -118,18 +51,19 @@ export default function ProductManagement() {
   };
 
   const handleDeleteProduct = (id: string) => {
-    setProducts(products.filter(prod => prod.id !== id));
+    setProducts(products.filter(prod => prod.productID !== id));
   };
 
   const handleSaveProduct = (product: Product) => {
     if (selectedProduct) {
       // Update existing product
-      setProducts(products.map(prod => prod.id === product.id ? product : prod));
+      setProducts(products.map(prod => prod.productID === product.productID ? product : prod));
     } else {
       // Add new product
       const newProduct = {
         ...product,
-        id: Date.now().toString()
+        productID: Date.now().toString(),
+        createdDate: new Date().toISOString(),
       };
       setProducts([...products, newProduct]);
     }
@@ -139,11 +73,9 @@ export default function ProductManagement() {
   const filteredProducts = products.filter(prod => {
     const searchLower = searchTerm.toLowerCase();
     return (
-      prod.productId.toLowerCase().includes(searchLower) ||
+      prod.productID.toLowerCase().includes(searchLower) ||
       prod.productName.toLowerCase().includes(searchLower) ||
-      prod.category.toLowerCase().includes(searchLower) ||
-      prod.supplier.toLowerCase().includes(searchLower) ||
-      prod.sku.toLowerCase().includes(searchLower)
+      prod.productDescription.toLowerCase().includes(searchLower)
     );
   });
 
@@ -168,7 +100,7 @@ export default function ProductManagement() {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           <Input
             type="text"
-            placeholder="Search by ID, name, category, supplier, or SKU..."
+            placeholder="Search by ID, name, or description..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
