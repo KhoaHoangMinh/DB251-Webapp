@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, RefreshCcw} from 'lucide-react';
 import EmployeeTable from './EmployeeTable';
 import EmployeeDialog from './EmployeeDialog';
 
@@ -21,17 +21,17 @@ export default function EmployeeManagement() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
 
-  useEffect(() => {
-    const fetchEmployees = async () => {
-      try {
-        const response = await fetch('http://localhost:8000/employees'); // Adjust URL if needed
-        const data = await response.json();
-        setEmployees(data);
-      } catch (error) {
-        console.error('Error fetching employees:', error);
-      }
-    };
+  const fetchEmployees = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/employees'); // Adjust URL if needed
+      const data = await response.json();
+      setEmployees(data);
+    } catch (error) {
+      console.error('Error fetching employees:', error);
+    }
+  };
 
+  useEffect(() => {
     fetchEmployees();
   }, []);
 
@@ -84,10 +84,16 @@ export default function EmployeeManagement() {
               Manage employee information and records
             </p>
           </div>
-          <Button onClick={handleAddEmployee}>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Employee
-          </Button>
+          <div className="flex gap-4">
+            <Button onClick={handleAddEmployee}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Employee
+            </Button>
+            <Button onClick={fetchEmployees}>
+              <RefreshCcw className="w-4 h-4 mr-2" />
+              Refresh
+            </Button>
+          </div>
         </div>
 
         {/* Search Bar */}
