@@ -46,6 +46,18 @@ def get_summary_stats(db : db_dependency) -> SummaryStats:
         return SummaryStats(total_employees = total_employees, total_positions = total_positions,
                             total_departments = total_departments, avg_salary=avg_salary)
 
+def search_cond(a, b):
+    return (a.lower() in b.employeeName.lower()
+            or a.lower() in b.employeeID.lower()
+            or a.lower() in b.storeID.lower()
+            or a.lower() in b.department.lower()
+            or a.lower() in b.position.lower())
+@router.get('/search')
+def search_employee(search: str, db: db_dependency):
+    employees = db.query(Employee).all()
+    employees = [e for e in employees if search_cond(search, e)]
+    return employees
+
 @router.get("/{id}")
 def view_employee(id: str, db : db_dependency):
     employee = db.query(Employee).get(id)
