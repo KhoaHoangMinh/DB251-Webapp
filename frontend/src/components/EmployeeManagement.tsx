@@ -6,85 +6,61 @@ import EmployeeTable from './EmployeeTable';
 import EmployeeDialog from './EmployeeDialog';
 
 interface Employee {
-  id: string;
-  employeeId: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
+  employeeId: string; // Matches EmployeeID in SQL
+  employeeName: string; // Matches EmployeeName in SQL
+  storeId: string; // Matches StoreID in SQL
   department: string;
   position: string;
-  salary: number;
-  hireDate: string;
-  status: 'Active' | 'Inactive';
+  isActive: boolean; // Matches IsActive in SQL
+  salary: number; // Matches Salary in SQL
 }
 
 // Mock employee data
 const initialEmployees: Employee[] = [
   {
-    id: '1',
     employeeId: 'EMP001',
-    firstName: 'John',
-    lastName: 'Smith',
-    email: 'john.smith@company.com',
-    phone: '555-0101',
+    employeeName: 'John Smith',
+    storeId: 'STO001',
     department: 'Engineering',
     position: 'Software Engineer',
-    salary: 75000,
-    hireDate: '2023-01-15',
-    status: 'Active'
+    isActive: true,
+    salary: 75000
   },
   {
-    id: '2',
     employeeId: 'EMP002',
-    firstName: 'Sarah',
-    lastName: 'Johnson',
-    email: 'sarah.johnson@company.com',
-    phone: '555-0102',
+    employeeName: 'Sarah Johnson',
+    storeId: 'STO002',
     department: 'Marketing',
     position: 'Marketing Manager',
-    salary: 82000,
-    hireDate: '2022-06-20',
-    status: 'Active'
+    isActive: true,
+    salary: 82000
   },
   {
-    id: '3',
     employeeId: 'EMP003',
-    firstName: 'Michael',
-    lastName: 'Davis',
-    email: 'michael.davis@company.com',
-    phone: '555-0103',
+    employeeName: 'Michael Davis',
+    storeId: 'STO003',
     department: 'Sales',
     position: 'Sales Representative',
-    salary: 65000,
-    hireDate: '2023-03-10',
-    status: 'Active'
+    isActive: true,
+    salary: 65000
   },
   {
-    id: '4',
     employeeId: 'EMP004',
-    firstName: 'Emily',
-    lastName: 'Brown',
-    email: 'emily.brown@company.com',
-    phone: '555-0104',
+    employeeName: 'Emily Brown',
+    storeId: 'STO004',
     department: 'Human Resources',
     position: 'HR Specialist',
-    salary: 70000,
-    hireDate: '2022-11-05',
-    status: 'Active'
+    isActive: true,
+    salary: 70000
   },
   {
-    id: '5',
     employeeId: 'EMP005',
-    firstName: 'David',
-    lastName: 'Wilson',
-    email: 'david.wilson@company.com',
-    phone: '555-0105',
+    employeeName: 'David Wilson',
+    storeId: 'STO001',
     department: 'Engineering',
     position: 'Senior Developer',
-    salary: 95000,
-    hireDate: '2021-08-12',
-    status: 'Active'
+    isActive: true,
+    salary: 95000
   }
 ];
 
@@ -105,18 +81,18 @@ export default function EmployeeManagement() {
   };
 
   const handleDeleteEmployee = (id: string) => {
-    setEmployees(employees.filter(emp => emp.id !== id));
+    setEmployees(employees.filter(emp => emp.employeeId !== id));
   };
 
   const handleSaveEmployee = (employee: Employee) => {
     if (selectedEmployee) {
       // Update existing employee
-      setEmployees(employees.map(emp => emp.id === employee.id ? employee : emp));
+      setEmployees(employees.map(emp => emp.employeeId === employee.employeeId ? employee : emp));
     } else {
       // Add new employee
       const newEmployee = {
         ...employee,
-        id: Date.now().toString()
+        employeeId: Date.now().toString()
       };
       setEmployees([...employees, newEmployee]);
     }
@@ -127,9 +103,7 @@ export default function EmployeeManagement() {
     const searchLower = searchTerm.toLowerCase();
     return (
       emp.employeeId.toLowerCase().includes(searchLower) ||
-      emp.firstName.toLowerCase().includes(searchLower) ||
-      emp.lastName.toLowerCase().includes(searchLower) ||
-      emp.email.toLowerCase().includes(searchLower) ||
+      emp.employeeName.toLowerCase().includes(searchLower) ||
       emp.department.toLowerCase().includes(searchLower) ||
       emp.position.toLowerCase().includes(searchLower)
     );

@@ -15,26 +15,22 @@ import {
 } from './ui/alert-dialog';
 
 interface Employee {
-  id: string;
-  employeeId: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
+  employeeId: string; // Matches EmployeeID in SQL
+  employeeName: string; // Matches EmployeeName in SQL
+  storeId: string; // Matches StoreID in SQL
   department: string;
   position: string;
-  salary: number;
-  hireDate: string;
-  status: 'Active' | 'Inactive';
+  isActive: boolean; // Matches IsActive in SQL
+  salary: number; // Matches Salary in SQL
 }
 
 interface EmployeeTableProps {
   employees: Employee[];
   onEdit: (employee: Employee) => void;
-  onDelete: (id: string) => void;
+  onDelete: (employeeId: string) => void;
 }
 
-type SortField = 'employeeId' | 'firstName' | 'department' | 'position' | 'salary' | 'hireDate';
+type SortField = 'employeeId' | 'employeeName' | 'storeId' | 'department' | 'position' | 'salary';
 type SortOrder = 'asc' | 'desc';
 
 export default function EmployeeTable({ employees, onEdit, onDelete }: EmployeeTableProps) {
@@ -97,10 +93,11 @@ export default function EmployeeTable({ employees, onEdit, onDelete }: EmployeeT
                   <SortButton field="employeeId">Employee ID</SortButton>
                 </TableHead>
                 <TableHead>
-                  <SortButton field="firstName">Name</SortButton>
+                  <SortButton field="employeeName">Name</SortButton>
                 </TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Phone</TableHead>
+                <TableHead>
+                  <SortButton field="storeId">Store ID</SortButton>
+                </TableHead>
                 <TableHead>
                   <SortButton field="department">Department</SortButton>
                 </TableHead>
@@ -110,9 +107,6 @@ export default function EmployeeTable({ employees, onEdit, onDelete }: EmployeeT
                 <TableHead>
                   <SortButton field="salary">Salary</SortButton>
                 </TableHead>
-                <TableHead>
-                  <SortButton field="hireDate">Hire Date</SortButton>
-                </TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -120,28 +114,22 @@ export default function EmployeeTable({ employees, onEdit, onDelete }: EmployeeT
             <TableBody>
               {sortedEmployees.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={10} className="text-center py-8 text-gray-500">
+                  <TableCell colSpan={8} className="text-center py-8 text-gray-500">
                     No employees found. Try adjusting your search criteria.
                   </TableCell>
                 </TableRow>
               ) : (
                 sortedEmployees.map((employee) => (
-                  <TableRow key={employee.id}>
+                  <TableRow key={employee.employeeId}>
                     <TableCell>{employee.employeeId}</TableCell>
-                    <TableCell>
-                      {employee.firstName} {employee.lastName}
-                    </TableCell>
-                    <TableCell>{employee.email}</TableCell>
-                    <TableCell>{employee.phone}</TableCell>
+                    <TableCell>{employee.employeeName}</TableCell>
+                    <TableCell>{employee.storeId}</TableCell>
                     <TableCell>{employee.department}</TableCell>
                     <TableCell>{employee.position}</TableCell>
                     <TableCell>${employee.salary.toLocaleString()}</TableCell>
                     <TableCell>
-                      {new Date(employee.hireDate).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={employee.status === 'Active' ? 'default' : 'secondary'}>
-                        {employee.status}
+                      <Badge variant={employee.isActive ? 'default' : 'secondary'}>
+                        {employee.isActive ? 'Active' : 'Inactive'}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
@@ -157,7 +145,7 @@ export default function EmployeeTable({ employees, onEdit, onDelete }: EmployeeT
                         <Button
                           variant="destructive"
                           size="sm"
-                          onClick={() => handleDeleteClick(employee.id)}
+                          onClick={() => handleDeleteClick(employee.employeeId)}
                         >
                           <Trash2 className="w-4 h-4 mr-1" />
                           Delete
