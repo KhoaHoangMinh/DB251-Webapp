@@ -63,17 +63,47 @@ export default function EmployeeManagement() {
     setEmployees(employees.filter(emp => emp.employeeID !== id));
   };
 
-  const handleSaveEmployee = (employee: Employee) => {
+  const handleSaveEmployee = async (employee: Employee) => {
     if (selectedEmployee) {
       // Update existing employee
-      setEmployees(employees.map(emp => emp.employeeID === employee.employeeID ? employee : emp));
+      try {
+        const response = await fetch(`http://localhost:8000/employees/${employee.employeeID}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(employee),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update employee');
+        }
+
+        const updatedEmployee = await response.json();
+        setEmployees(employees.map(emp => emp.employeeID === updatedEmployee.employeeID ? updatedEmployee : emp));
+      } catch (error) {
+        console.error('Error updating employee:', error);
+      }
     } else {
       // Add new employee
-      const newEmployee = {
-        ...employee,
-        employeeID: Date.now().toString()
-      };
-      setEmployees([...employees, newEmployee]);
+      try {
+        const response = await fetch('http://localhost:8000/employees', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(employee),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to create employee');
+        }
+
+        const newEmployee = await response.json();
+        setEmployees([...employees, newEmployee]);
+      } catch (error) {
+        console.error('Error creating employee:', error);
+      }
     }
     setIsDialogOpen(false);
   };
