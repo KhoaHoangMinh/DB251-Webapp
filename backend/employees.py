@@ -10,11 +10,11 @@ from models import Employee
 router = APIRouter(prefix="/employees", tags=["Employees"])
 
 class EmployeesCreate(BaseModel):
-    EmployeeName: str
-    StoreID: str
-    Department: str
-    Position : str
-    Salary: float
+    employeeName: str
+    storeID: str
+    department: str
+    position : str
+    salary: float
 
 class SummaryStats(BaseModel):
     total_employees: int
@@ -23,9 +23,9 @@ class SummaryStats(BaseModel):
     avg_salary: float
 
 class EmployeeUpdate(BaseModel):
-    Department: Optional[str] = None
-    Position: Optional[str] = None
-    Salary: Optional[float] = None
+    department: Optional[str] = None
+    position: Optional[str] = None
+    salary: Optional[float] = None
 
 
 @router.get("/")
@@ -39,9 +39,9 @@ def get_summary_stats(db : db_dependency) -> SummaryStats:
         return SummaryStats(total_employees = 0, total_positions = 0, total_departments = 0, avg_salary=0)
     else :
         # TODO: convert this part to use SQL FUNCTION
-        total_positions = db.query(Employee.Position).distinct().count()
-        total_departments = db.query(Employee.Department).distinct().count()
-        total_salary = db.query(func.sum(Employee.Salary)).scalar()
+        total_positions = db.query(Employee.position).distinct().count()
+        total_departments = db.query(Employee.department).distinct().count()
+        total_salary = db.query(func.sum(Employee.salary)).scalar()
         avg_salary = round(total_salary / total_employees, 2)
         return SummaryStats(total_employees = total_employees, total_positions = total_positions,
                             total_departments = total_departments, avg_salary=avg_salary)
@@ -70,12 +70,12 @@ def create_employees(employees: List[EmployeesCreate], db : db_dependency):
 
 @router.put("/{id}")
 def update_employee(id: str, employee : EmployeeUpdate, db : db_dependency):
-    db_employee = db.query(Employee).filter(Employee.EmployeeID == id).first()
+    db_employee = db.query(Employee).filter(Employee.employeeID == id).first()
     if not db_employee:
         raise HTTPException(status_code=404, detail="employee not found")
-    if employee.Position: db_employee.Position = employee.Position
-    if employee.Department: db_employee.Department = employee.Department
-    if employee.Salary: db_employee.Salary = employee.Salary
+    if employee.position: db_employee.position = employee.position
+    if employee.department: db_employee.department = employee.department
+    if employee.salary: db_employee.salary = employee.salary
     db.commit()
     db.refresh(db_employee)
     return db_employee
@@ -88,7 +88,7 @@ def delete_bulk(indexes : List[str] = Body(...), db : Session = Depends(get_db))
 
 @router.delete("/{id}")
 def delete_employee(id: str, db : db_dependency):
-    db_employee = db.query(Employee).filter(Employee.EmployeeID == id).first()
+    db_employee = db.query(Employee).filter(Employee.employeeID == id).first()
     if not db_employee:
         raise HTTPException(status_code=404, detail="employee not found")
     db.delete(db_employee)

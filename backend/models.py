@@ -73,7 +73,7 @@ class Store(Base):
 class Employee(Base):
     __tablename__ = "Employee"
 
-    EmployeeID = Column(
+    employeeID = Column(
         String(10),
         primary_key=True,
         server_default=text(
@@ -81,12 +81,12 @@ class Employee(Base):
         ),
         nullable=False,
     )
-    EmployeeName = Column(String(100), nullable=False)
-    StoreID = Column(String(10), ForeignKey("Store.StoreID", ondelete="CASCADE"), nullable=False)
-    Department = Column(String(50), nullable=False)
-    Position = Column(String(50), nullable=False)
-    IsActive = Column(Boolean, server_default="1")
-    Salary = Column(DECIMAL(10, 2))
+    employeeName = Column(String(100), nullable=False)
+    storeID = Column(String(10), ForeignKey("Store.StoreID", ondelete="CASCADE"), nullable=False)
+    department = Column(String(50), nullable=False)
+    position = Column(String(50), nullable=False)
+    isActive = Column(Boolean, server_default="1")
+    salary = Column(DECIMAL(10, 2))
 
     __table_args__ = (
         CheckConstraint("Salary >= 0", name="checkSalary"),
