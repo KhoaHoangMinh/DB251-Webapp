@@ -85,9 +85,12 @@ def update_employee(id: str, employee : EmployeeUpdate, db : db_dependency):
     db_employee = db.query(Employee).filter(Employee.employeeID == id).first()
     if not db_employee:
         raise HTTPException(status_code=404, detail="employee not found")
-    if employee.position: db_employee.position = employee.position
-    if employee.department: db_employee.department = employee.department
-    if employee.salary: db_employee.salary = employee.salary
+    if employee.position and db_employee.position != employee.position:
+        db_employee.position = employee.position
+    if employee.department and db_employee.department != employee.department:
+        db_employee.department = employee.department
+    if employee.salary and db_employee.salary != employee.salary:
+        db_employee.salary = employee.salary
     db.commit()
     db.refresh(db_employee)
     return db_employee
