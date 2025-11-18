@@ -60,8 +60,15 @@ export default function ProductManagement() {
     setIsDialogOpen(true);
   };
 
-  const handleDeleteProduct = (id: string) => {
-    setProducts(products.filter(prod => prod.productID !== id));
+  const handleDeleteProduct = async (id: string) => {
+    try {
+      const response = await fetch(`http://localhost:8000/products/${id}`, {
+        method: 'DELETE'
+      });
+    } catch (error) {
+      console.error('Error deleting employee:', error);
+    }
+    fetchProducts();
   };
 
   const handleSaveProduct = async (product: Product) => {

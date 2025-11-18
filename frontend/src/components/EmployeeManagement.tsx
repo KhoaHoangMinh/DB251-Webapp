@@ -59,8 +59,15 @@ export default function EmployeeManagement() {
     setIsDialogOpen(true);
   };
 
-  const handleDeleteEmployee = (id: string) => {
-    setEmployees(employees.filter(emp => emp.employeeID !== id));
+  const handleDeleteEmployee = async (id: string) => {
+    try {
+      const response = await fetch(`http://localhost:8000/employees/${id}`, {
+        method: 'DELETE'
+      });
+    } catch (error) {
+      console.error('Error deleting employee:', error);
+    }
+    fetchEmployees();
   };
 
   const handleSaveEmployee = async (employee: Employee) => {
