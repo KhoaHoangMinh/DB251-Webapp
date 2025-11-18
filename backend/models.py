@@ -101,7 +101,7 @@ class Employee(Base):
 class Product(Base):
     __tablename__ = "Product"
 
-    ProductID = Column(
+    productID = Column(
         String(10),
         primary_key=True,
         server_default=text(
@@ -109,12 +109,12 @@ class Product(Base):
         ),
         nullable=False,
     )
-    ProductName = Column(String(100), unique=True, nullable=False)
-    ProductDescription = Column(Text)
-    Price = Column(DECIMAL(10, 2), nullable=False)
-    StockQuantity = Column(Integer, server_default="0")
-    IsActive = Column(Boolean, server_default="1")
-    CreatedDate = Column(DateTime, server_default=func.current_timestamp())
+    productName = Column(String(100), unique=True, nullable=False)
+    productDescription = Column(Text)
+    price = Column(DECIMAL(10, 2), nullable=False)
+    stockQuantity = Column(Integer, server_default="0")
+    isActive = Column(Boolean, server_default="1")
+    createdDate = Column(DateTime, server_default=func.current_timestamp())
 
     __table_args__ = (
         CheckConstraint("Price >= 0", name="checkPrice"),
@@ -164,7 +164,7 @@ class OrderItem(Base):
     __tablename__ = "OrderItem"
 
     OrderID = Column(String(10), ForeignKey("Orders.OrderID", ondelete="CASCADE"), primary_key=True)
-    ProductID = Column(String(10), ForeignKey("Product.ProductID", ondelete="CASCADE"), primary_key=True)
+    ProductID = Column(String(10), ForeignKey("Product.productID", ondelete="CASCADE"), primary_key=True)
     Quantity = Column(Integer, nullable=False)
     UnitPrice = Column(DECIMAL(10, 2), nullable=False)
     LineTotal = Column(DECIMAL(10, 2))

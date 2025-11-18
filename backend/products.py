@@ -8,16 +8,16 @@ from models import Product
 router = APIRouter(prefix="/products", tags=["Products"])
 
 class ProductUpdate(BaseModel):
-    ProductName: Optional[str] = None
-    ProductDescription: Optional[str] = None
-    Price: Optional[float] = None
-    Stock: Optional[int] = None
+    productName: Optional[str] = None
+    productDescription: Optional[str] = None
+    price: Optional[float] = None
+    stock: Optional[int] = None
 
 class ProductCreate(BaseModel):
-    ProductName: str
-    ProductDescription: str
-    Price: Optional[float] = None
-    StockQuantity: Optional[int] = None
+    productName: str
+    productDescription: str
+    price: Optional[float] = None
+    stockQuantity: Optional[int] = None
 
 class SummaryStats(BaseModel):
     total_products: int
@@ -34,7 +34,7 @@ def get_summary_stats(db: db_dependency) -> SummaryStats:
     return SummaryStats(total_products=total_products)
 
 def search_cond(a, b):
-    return a.lower() in b.ProductName.lower() or a.lower() in b.ProductDescription.lower()
+    return a.lower() in b.productName.lower() or a.lower() in b.productDescription.lower()
 @router.get("/search")
 def search_product(search: str, db: db_dependency):
     products = list(db.query(Product).all())
@@ -65,13 +65,13 @@ def create_products(products: List[ProductCreate], db: db_dependency):
 
 @router.put("/{product_id}")
 def update_product(product_id: str, product_update: ProductUpdate, db: db_dependency):
-    product = db.query(Product).filter(Product.ProductID == product_id).first()
+    product = db.query(Product).filter(Product.productID == product_id).first()
     if not product:
         raise HTTPException(status_code=404, detail="Invalid product ID")
-    if product_update.ProductName: product.ProductName = product_update.ProductName
-    if product_update.ProductDescription: product.ProductDescription = product_update.ProductDescription
-    if product_update.Price: product.Price = product_update.Price
-    if product_update.Stock: product.StockQuantity = product_update.Stock
+    if product_update.productName: product.productName = product_update.productName
+    if product_update.productDescription: product.productDescription = product_update.productDescription
+    if product_update.price: product.price = product_update.price
+    if product_update.stock: product.stockQuantity = product_update.stock
     db.commit()
     db.refresh(product)
     return product
@@ -84,7 +84,7 @@ def delete_bulk(indexes: List[str], db: db_dependency):
 
 @router.delete("/{product_id}")
 def delete_product(product_id: str, db: db_dependency):
-    product = db.query(Product).filter(Product.ProductID == product_id).first()
+    product = db.query(Product).filter(Product.productID == product_id).first()
     if not product:
         raise HTTPException(status_code=404, detail="Invalid product ID")
     db.delete(product)
