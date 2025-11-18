@@ -48,7 +48,7 @@ export default function MainManagement({ currentUser, onLogout }: MainManagement
               <ShoppingCart className="w-4 h-4" />
               Orders
             </TabsTrigger>
-            <TabsTrigger value="storess" className="flex items-center gap-2">
+            <TabsTrigger value="stores" className="flex items-center gap-2">
               <Building className="w-4 h-4" />
               Stores
             </TabsTrigger>
