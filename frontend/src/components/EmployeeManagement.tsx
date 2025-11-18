@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Plus, Search } from 'lucide-react';
@@ -6,69 +6,34 @@ import EmployeeTable from './EmployeeTable';
 import EmployeeDialog from './EmployeeDialog';
 
 interface Employee {
-  employeeId: string; // Matches EmployeeID in SQL
-  employeeName: string; // Matches EmployeeName in SQL
-  storeId: string; // Matches StoreID in SQL
+  employeeID: string;
+  employeeName: string;
+  storeId: string;
   department: string;
   position: string;
-  isActive: boolean; // Matches IsActive in SQL
+  isActive: boolean;
   salary: number; // Matches Salary in SQL
 }
 
-// Mock employee data
-const initialEmployees: Employee[] = [
-  {
-    employeeId: 'EMP001',
-    employeeName: 'John Smith',
-    storeId: 'STO001',
-    department: 'Engineering',
-    position: 'Software Engineer',
-    isActive: true,
-    salary: 75000
-  },
-  {
-    employeeId: 'EMP002',
-    employeeName: 'Sarah Johnson',
-    storeId: 'STO002',
-    department: 'Marketing',
-    position: 'Marketing Manager',
-    isActive: true,
-    salary: 82000
-  },
-  {
-    employeeId: 'EMP003',
-    employeeName: 'Michael Davis',
-    storeId: 'STO003',
-    department: 'Sales',
-    position: 'Sales Representative',
-    isActive: true,
-    salary: 65000
-  },
-  {
-    employeeId: 'EMP004',
-    employeeName: 'Emily Brown',
-    storeId: 'STO004',
-    department: 'Human Resources',
-    position: 'HR Specialist',
-    isActive: true,
-    salary: 70000
-  },
-  {
-    employeeId: 'EMP005',
-    employeeName: 'David Wilson',
-    storeId: 'STO001',
-    department: 'Engineering',
-    position: 'Senior Developer',
-    isActive: true,
-    salary: 95000
-  }
-];
-
 export default function EmployeeManagement() {
-  const [employees, setEmployees] = useState<Employee[]>(initialEmployees);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/employees'); // Adjust URL if needed
+        const data = await response.json();
+        setEmployees(data);
+      } catch (error) {
+        console.error('Error fetching employees:', error);
+      }
+    };
+
+    fetchEmployees();
+  }, []);
 
   const handleAddEmployee = () => {
     setSelectedEmployee(null);
@@ -81,18 +46,18 @@ export default function EmployeeManagement() {
   };
 
   const handleDeleteEmployee = (id: string) => {
-    setEmployees(employees.filter(emp => emp.employeeId !== id));
+    setEmployees(employees.filter(emp => emp.employeeID !== id));
   };
 
   const handleSaveEmployee = (employee: Employee) => {
     if (selectedEmployee) {
       // Update existing employee
-      setEmployees(employees.map(emp => emp.employeeId === employee.employeeId ? employee : emp));
+      setEmployees(employees.map(emp => emp.employeeID === employee.employeeID ? employee : emp));
     } else {
       // Add new employee
       const newEmployee = {
         ...employee,
-        employeeId: Date.now().toString()
+        employeeID: Date.now().toString()
       };
       setEmployees([...employees, newEmployee]);
     }
@@ -102,7 +67,7 @@ export default function EmployeeManagement() {
   const filteredEmployees = employees.filter(emp => {
     const searchLower = searchTerm.toLowerCase();
     return (
-      emp.employeeId.toLowerCase().includes(searchLower) ||
+      emp.employeeID.toLowerCase().includes(searchLower) ||
       emp.employeeName.toLowerCase().includes(searchLower) ||
       emp.department.toLowerCase().includes(searchLower) ||
       emp.position.toLowerCase().includes(searchLower)

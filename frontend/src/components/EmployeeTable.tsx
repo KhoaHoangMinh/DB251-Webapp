@@ -15,27 +15,27 @@ import {
 } from './ui/alert-dialog';
 
 interface Employee {
-  employeeId: string; // Matches EmployeeID in SQL
-  employeeName: string; // Matches EmployeeName in SQL
-  storeId: string; // Matches StoreID in SQL
+  employeeID: string;
+  employeeName: string;
+  storeId: string;
   department: string;
   position: string;
-  isActive: boolean; // Matches IsActive in SQL
-  salary: number; // Matches Salary in SQL
+  isActive: boolean;
+  salary: number;
 }
 
 interface EmployeeTableProps {
   employees: Employee[];
   onEdit: (employee: Employee) => void;
-  onDelete: (employeeId: string) => void;
+  onDelete: (employeeID: string) => void;
 }
 
-type SortField = 'employeeId' | 'employeeName' | 'storeId' | 'department' | 'position' | 'salary';
+type SortField = 'employeeID' | 'employeeName' | 'storeId' | 'department' | 'position' | 'salary';
 type SortOrder = 'asc' | 'desc';
 
 export default function EmployeeTable({ employees, onEdit, onDelete }: EmployeeTableProps) {
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [sortField, setSortField] = useState<SortField>('employeeId');
+  const [sortField, setSortField] = useState<SortField>('employeeID');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
   const handleSort = (field: SortField) => {
@@ -90,7 +90,7 @@ export default function EmployeeTable({ employees, onEdit, onDelete }: EmployeeT
             <TableHeader>
               <TableRow>
                 <TableHead>
-                  <SortButton field="employeeId">Employee ID</SortButton>
+                  <SortButton field="employeeID">Employee ID</SortButton>
                 </TableHead>
                 <TableHead>
                   <SortButton field="employeeName">Name</SortButton>
@@ -120,8 +120,8 @@ export default function EmployeeTable({ employees, onEdit, onDelete }: EmployeeT
                 </TableRow>
               ) : (
                 sortedEmployees.map((employee) => (
-                  <TableRow key={employee.employeeId}>
-                    <TableCell>{employee.employeeId}</TableCell>
+                  <TableRow key={employee.employeeID}>
+                    <TableCell>{employee.employeeID}</TableCell>
                     <TableCell>{employee.employeeName}</TableCell>
                     <TableCell>{employee.storeId}</TableCell>
                     <TableCell>{employee.department}</TableCell>
@@ -145,7 +145,7 @@ export default function EmployeeTable({ employees, onEdit, onDelete }: EmployeeT
                         <Button
                           variant="destructive"
                           size="sm"
-                          onClick={() => handleDeleteClick(employee.employeeId)}
+                          onClick={() => handleDeleteClick(employee.employeeID)}
                         >
                           <Trash2 className="w-4 h-4 mr-1" />
                           Delete
