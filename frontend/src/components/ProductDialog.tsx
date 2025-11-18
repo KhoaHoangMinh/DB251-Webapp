@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from './ui/dialog';
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "./ui/select";
 
 interface Product {
   productID: string;
@@ -152,15 +153,18 @@ export default function ProductDialog({ product, open, onOpenChange, onSave }: P
             {/* Is Active */}
             <div className="col-span-2">
               <Label htmlFor="isActive">Active Status</Label>
-              <select
-                id="isActive"
+              <Select
                 value={formData.isActive ? 'true' : 'false'}
-                onChange={(e) => handleChange('isActive', e.target.value === 'true')}
-                className="w-full border border-gray-300 rounded-md p-2"
+                onValueChange={(value) => handleChange('isActive', value === 'true')}
               >
-                <option value="true">Active</option>
-                <option value="false">Inactive</option>
-              </select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="true">Active</SelectItem>
+                  <SelectItem value="false">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter>
