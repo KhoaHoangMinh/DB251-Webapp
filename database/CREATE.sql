@@ -23,7 +23,7 @@ CREATE TABLE Customer (
     RegistrationDate DATETIME DEFAULT CURRENT_TIMESTAMP,
     IsActive BIT DEFAULT 1,
     LoyaltyPoints INT DEFAULT 0 CHECK (LoyaltyPoints >= 0),
-    CONSTRAINT checkEmailFormat CHECK (Email LIKE '%_@gmail.com%')
+    CONSTRAINT checkEmailFormat CHECK (Email LIKE '%_@gmail.com')
     --Should allow more types of email (eg: @hcmut.edu.vn) ?
 );
 

@@ -40,14 +40,16 @@ def list_customers(db: db_dependency):
 
 @router.get("/stats", response_model=SummaryStats)
 def get_summary_stats(db : db_dependency) -> SummaryStats:
-    total_customers = db.query(Customer).count()
-    if total_customers == 0 :
-        return SummaryStats(total_Customers = 0, avg_age=0)
-    else :
-        # TODO: convert this part to use SQL FUNCTION
-        avg_age = round(db.query(func.sum(Customer.Age)).scalar() / total_customers, 1)
-        return SummaryStats(total_Customers = total_customers, avg_age=avg_age)
+    try:
+        query = text("SELECT * FROM dbo.GetSummaryStatsForCustomers()")
+        result = db.execute(query).fetchone()
 
+        return SummaryStats(
+            total_Customers=result.total_customer,
+            avg_age=result.avg_age,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 @router.get("/{id}")
 def view_customer(id: str, db : db_dependency):
     customer = db.query(Customer).get(id)

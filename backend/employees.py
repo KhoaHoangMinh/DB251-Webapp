@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Body, Depends
 from typing import Optional, List
 from pydantic import BaseModel
-from sqlalchemy import func
+from sqlalchemy import func, text
 from sqlalchemy.orm import Session
 
 from database import get_db, db_dependency
@@ -34,17 +34,18 @@ def list_employees(db: db_dependency):
 
 @router.get("/stats", response_model=SummaryStats)
 def get_summary_stats(db : db_dependency) -> SummaryStats:
-    total_employees = db.query(Employee).count()
-    if total_employees == 0 :
-        return SummaryStats(total_employees = 0, total_positions = 0, total_departments = 0, avg_salary=0)
-    else :
-        # TODO: convert this part to use SQL FUNCTION
-        total_positions = db.query(Employee.position).distinct().count()
-        total_departments = db.query(Employee.department).distinct().count()
-        total_salary = db.query(func.sum(Employee.salary)).scalar()
-        avg_salary = round(total_salary / total_employees, 2)
-        return SummaryStats(total_employees = total_employees, total_positions = total_positions,
-                            total_departments = total_departments, avg_salary=avg_salary)
+    try:
+        query = text("SELECT * FROM dbo.GetSummaryStatsForEmployee()")
+        result = db.execute(query).fetchone()
+
+        return SummaryStats(
+            total_employees=result.total_employees,
+            total_positions=result.total_positions,
+            total_departments=result.total_departments,
+            avg_salary=float(result.avg_salary) if result.avg_salary else 0,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 def search_cond(a, b):
     return (a.lower() in b.employeeName.lower()

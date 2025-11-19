@@ -40,7 +40,8 @@ BEGIN
     SELECT @AvgPrice = AVG(oi.UnitPrice)
     FROM Orders o
          JOIN OrderItem oi ON o.OrderID = oi.OrderID
-    WHERE o.StoreID = @StoreID;
+    WHERE o.StoreID = @StoreID
+    AND o.OrderStatus IN ('Confirmed', 'Delivered', 'Shipped');
 
     RETURN ISNULL(@AvgPrice, 0);
 END;
@@ -61,4 +62,68 @@ RETURN
     WHERE oi.OrderID = @OrderID
     GROUP BY oi.OrderID
 )
+GO
+
+-- Function 4: Get SummaryStats for Employee
+CREATE FUNCTION dbo.GetSummaryStatsForEmployee()
+RETURNS @SummaryStats TABLE (
+    total_employees INT,
+    total_positions INT,
+    total_departments INT,
+    avg_salary DECIMAL(10,2)
+)
+AS
+BEGIN
+    DECLARE @total_employees INT;
+    DECLARE @total_positions INT;
+    DECLARE @total_departments INT;
+    DECLARE @avg_salary DECIMAL(10,2);
+
+    -- Get total employees
+    SELECT @total_employees = COUNT(*) FROM employee;
+
+    -- If no employees, return zeros
+    IF @total_employees = 0
+    BEGIN
+        INSERT INTO @SummaryStats VALUES (0, 0, 0, 0);
+        RETURN;
+    END
+
+    -- Get distinct positions count
+    SELECT @total_positions = COUNT(DISTINCT position) FROM employee;
+
+    -- Get distinct departments count
+    SELECT @total_departments = COUNT(DISTINCT department) FROM employee;
+
+    -- Calculate average salary
+    SELECT @avg_salary = ROUND(AVG(CAST(salary AS DECIMAL(10,2))), 2) FROM employee;
+
+    INSERT INTO @SummaryStats VALUES (@total_employees, @total_positions, @total_departments, @avg_salary);
+    RETURN;
+END;
+GO
+
+-- Function 5: Get SummaryStats for Customer
+CREATE FUNCTION dbo.GetSummaryStatsForCustomers()
+RETURNS @SummaryStats TABLE (
+    total_customer INT,
+    avg_age DECIMAL(10,2)
+)
+AS BEGIN
+    DECLARE @total_customers INT;
+    DECLARE @avg_age DECIMAL(10, 2)
+
+    SELECT @total_customers = COUNT(*) FROM Customer;
+
+    IF @total_customers = 0
+    BEGIN
+        INSERT INTO @SummaryStats VALUES (0, 0);
+        RETURN;
+    END
+
+    SELECT @avg_age = ROUND(AVG(CAST(Age AS DECIMAL(10,2))), 2) FROM Customer;
+
+    INSERT INTO @SummaryStats VALUES (@total_customers, @avg_age);
+    RETURN;
+END;
 GO
