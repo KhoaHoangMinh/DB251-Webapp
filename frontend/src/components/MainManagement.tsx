@@ -4,6 +4,7 @@ import { LogOut, Users, Package, CircleUser, ShoppingCart, Building} from 'lucid
 import EmployeeManagement from './EmployeeManagement';
 import ProductManagement from './ProductManagement';
 import CustomerManagement from './CustomerManagement'
+import OrderManagement from './OrderManagement'
 
 interface MainManagementProps {
   currentUser: string | null;
@@ -65,7 +66,7 @@ export default function MainManagement({ currentUser, onLogout }: MainManagement
             <CustomerManagement />
           </TabsContent>
           <TabsContent value="orders">
-            <ProductManagement />
+            <OrderManagement />
           </TabsContent>
           <TabsContent value="stores">
             <ProductManagement />
