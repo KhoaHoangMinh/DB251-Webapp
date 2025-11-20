@@ -9,7 +9,7 @@ from models import Product
 from database import db_dependency
 from models import Orders, OrderItem
 
-router = APIRouter(prefix='/order', tags=["Order"])
+router = APIRouter(prefix='/orders', tags=["Orders"])
 
 class ItemInfo(BaseModel):
     productID: str
@@ -47,6 +47,17 @@ class OrderDetails(BaseModel):
 @router.get('/')
 def list_orders(db: db_dependency):
     return db.query(Orders).all()
+
+def search_cond(a, b):
+    return (a.lower() in b.orderID.lower()
+            or a.lower() in b.customerID.lower()
+            or a.lower() in b.storeID.lower()
+            or a.lower() in b.orderStatus.lower())
+@router.get('/search')
+def search_order(search: str, db: db_dependency):
+    orders = db.query(Orders).all()
+    orders = [e for e in orders if search_cond(search, e)]
+    return orders
 
 @router.get('/{id}')
 def view_order(id: str, db: db_dependency):
