@@ -127,3 +127,52 @@ AS BEGIN
     RETURN;
 END;
 GO
+
+-- Function 6: Calculate Estimate Delivery Date by OrderID
+CREATE FUNCTION CalculateEstimatedDelivery
+(
+    @OrderID VARCHAR(20)
+)
+RETURNS DATE
+AS
+BEGIN
+    DECLARE @EstimatedDelivery DATE;
+    DECLARE @ProcessingDays INT;
+    DECLARE @StoreID VARCHAR(50);
+    DECLARE @OrderStatus VARCHAR(20);
+    DECLARE @OrderDate DATETIME;
+
+    SELECT
+        @StoreID = StoreID,
+        @OrderStatus = OrderStatus,
+        @OrderDate = DateOrder
+    FROM Orders
+    WHERE OrderID = @OrderID
+
+    IF @StoreID IS NULL
+        RETURN NULL;
+
+    IF @StoreID LIKE '%OUTLET%'
+        SET @ProcessingDays = 5;
+    ELSE IF @StoreID LIKE '%FLAGSHIP%'
+        SET @ProcessingDays = 2;
+    ELSE
+        SET @ProcessingDays = 3;
+
+    -- Adjust based on order status
+    IF @OrderStatus IN ('Cancelled', 'Pending')
+        SET @EstimatedDelivery = NULL;
+    ELSE IF @OrderStatus = 'Delivered'
+        SET @EstimatedDelivery = CAST(@OrderDate AS DATE);
+    ELSE
+        SET @EstimatedDelivery = DATEADD(DAY, @ProcessingDays, @OrderDate);
+
+    -- Exclude weekends from delivery estimate
+    WHILE @EstimatedDelivery IS NOT NULL AND DATENAME(WEEKDAY, @EstimatedDelivery) IN ('Saturday', 'Sunday')
+    BEGIN
+        SET @EstimatedDelivery = DATEADD(DAY, 1, @EstimatedDelivery);
+    END
+
+    RETURN @EstimatedDelivery;
+END
+GO

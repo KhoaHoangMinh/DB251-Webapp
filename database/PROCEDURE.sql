@@ -63,7 +63,6 @@ GO
 
 
 -- Procedure 3: Get products detail of Order by OrderID --
-
 CREATE PROCEDURE GetOrderProductDetails
     @OrderID VARCHAR(10) = NULL  -- Optional parameter to filter by specific order
 AS
@@ -87,6 +86,34 @@ BEGIN
     INNER JOIN Store s ON o.StoreID = s.StoreID
     WHERE (@OrderID IS NULL OR o.OrderID = @OrderID)
     ORDER BY o.DateOrder DESC, o.OrderID, p.ProductName;
+END;
+GO
+
+-- Procedure 4: Get Top N Best Selling Product
+CREATE PROCEDURE sp_GetTopSellingProductsByQuantity
+    @TopN INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validate TopN parameter
+    IF @TopN <= 0
+    BEGIN
+        RAISERROR('TopN must be a positive number.', 16, 1);
+        RETURN;
+    END
+
+    SELECT TOP (@TopN)
+        p.ProductID,
+        p.ProductName,
+        SUM(oi.Quantity) as TotalQuantitySold
+    FROM Product p
+    INNER JOIN OrderItem oi ON p.ProductID = oi.ProductID
+    INNER JOIN Orders o ON oi.OrderID = o.OrderID
+    WHERE o.OrderStatus NOT IN ('Cancelled', 'Pending', 'Confirmed', 'Processing')  -- Exclude cancelled orders
+      AND p.IsActive = 1
+    GROUP BY p.ProductID, p.ProductName
+    ORDER BY TotalQuantitySold DESC;
 END;
 GO
 
