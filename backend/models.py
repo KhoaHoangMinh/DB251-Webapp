@@ -43,7 +43,7 @@ class Customer(Base):
 class Store(Base):
     __tablename__ = "Store"
 
-    StoreID = Column(
+    storeID = Column(
         String(10),
         primary_key=True,
         server_default=text(
@@ -82,7 +82,7 @@ class Employee(Base):
         nullable=False,
     )
     employeeName = Column(String(100), nullable=False)
-    storeID = Column(String(10), ForeignKey("Store.StoreID", ondelete="CASCADE"), nullable=False)
+    storeID = Column(String(10), ForeignKey("Store.storeID", ondelete="CASCADE"), nullable=False)
     department = Column(String(50), nullable=False)
     position = Column(String(50), nullable=False)
     isActive = Column(Boolean, server_default="1")
@@ -130,7 +130,7 @@ class Product(Base):
 class Orders(Base):
     __tablename__ = "Orders"
 
-    OrderID = Column(
+    orderID = Column(
         String(10),
         primary_key=True,
         server_default=text(
@@ -139,9 +139,9 @@ class Orders(Base):
         nullable=False,
     )
     customerID = Column(String(10), ForeignKey("Customer.customerID", ondelete="CASCADE"), nullable=False)
-    StoreID = Column(String(10), ForeignKey("Store.StoreID", ondelete="CASCADE"), nullable=False)
-    DateOrder = Column(DateTime, server_default=func.current_timestamp())
-    OrderStatus = Column(
+    storeID = Column(String(10), ForeignKey("Store.storeID", ondelete="CASCADE"), nullable=False)
+    dateOrder = Column(DateTime, server_default=func.current_timestamp())
+    orderStatus = Column(
         String(20),
         server_default="Pending"
     )
@@ -163,11 +163,11 @@ class Orders(Base):
 class OrderItem(Base):
     __tablename__ = "OrderItem"
 
-    OrderID = Column(String(10), ForeignKey("Orders.OrderID", ondelete="CASCADE"), primary_key=True)
-    ProductID = Column(String(10), ForeignKey("Product.productID", ondelete="CASCADE"), primary_key=True)
-    Quantity = Column(Integer, nullable=False)
-    UnitPrice = Column(DECIMAL(10, 2), nullable=False)
-    LineTotal = Column(DECIMAL(10, 2))
+    orderID = Column(String(10), ForeignKey("Orders.orderID", ondelete="CASCADE"), primary_key=True)
+    productID = Column(String(10), ForeignKey("Product.productID", ondelete="CASCADE"), primary_key=True)
+    quantity = Column(Integer, nullable=False)
+    unitPrice = Column(DECIMAL(10, 2), nullable=False)
+    lineTotal = Column(DECIMAL(10, 2))
 
     __table_args__ = (
         CheckConstraint("Quantity > 0", name="checkQuantity"),
