@@ -48,6 +48,17 @@ def get_summary_stats(db : db_dependency) -> SummaryStats:
         avg_age = round(db.query(func.sum(Customer.age)).scalar() / total_customers, 1)
         return SummaryStats(total_Customers = total_customers, avg_age=avg_age)
 
+def search_cond(a, b):
+    return (a.lower() in b.customerID.lower()
+            or a.lower() in b.customerName.lower()
+            or a.lower() in b.email.lower()
+            or a.lower() in b.phone.lower())
+@router.get('/search')
+def search_customer(search: str, db: db_dependency):
+    customers = db.query(Customer).all()
+    customers = [e for e in customers if search_cond(search, e)]
+    return customers
+
 @router.get("/{id}")
 def view_customer(id: str, db : db_dependency):
     customer = db.query(Customer).get(id)
