@@ -97,4 +97,3 @@ def delete_product(product_id: str, db: db_dependency):
     db.commit()
     return {"message": f"Product {product_id} deleted successfully"}
 
-

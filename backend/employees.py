@@ -47,6 +47,7 @@ def get_summary_stats(db : db_dependency) -> SummaryStats:
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 def search_cond(a, b):
     return (a.lower() in b.employeeName.lower()
             or a.lower() in b.employeeID.lower()
@@ -110,4 +111,3 @@ def delete_employee(id: str, db : db_dependency):
     db.delete(db_employee)
     db.commit()
     return {"message": f"Employee {id} deleted successfully"}
-
