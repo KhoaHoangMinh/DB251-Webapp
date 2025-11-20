@@ -12,7 +12,7 @@ from database import Base
 class Customer(Base):
     __tablename__ = "Customer"
 
-    CustomerID = Column(
+    customerID = Column(
         String(10),
         primary_key=True,
         server_default=text(
@@ -20,14 +20,14 @@ class Customer(Base):
         ),
         nullable=False,
     )
-    Age = Column(Integer, nullable=False)
-    DateOfBirth = Column(Date, nullable=False)
-    CustomerName = Column(String(100), nullable=False)
-    Email = Column(String(100), unique=True, nullable=False)
-    Phone = Column(String(20), unique=True, nullable=False)
-    RegistrationDate = Column(DateTime, server_default=func.current_timestamp())
-    IsActive = Column(Boolean, server_default="1")
-    LoyaltyPoints = Column(Integer, nullable=False, server_default="0")
+    age = Column(Integer, nullable=False)
+    dateOfBirth = Column(Date, nullable=False)
+    customerName = Column(String(100), nullable=False)
+    email = Column(String(100), unique=True, nullable=False)
+    phone = Column(String(20), unique=True, nullable=False)
+    registrationDate = Column(DateTime, server_default=func.current_timestamp())
+    isActive = Column(Boolean, server_default="1")
+    loyaltyPoints = Column(Integer, nullable=False, server_default="0")
 
     __table_args__ = (
         CheckConstraint("Age >= 18", name="checkAge"),
@@ -55,9 +55,9 @@ class Store(Base):
     StoreAddress = Column(String(255), unique=True, nullable=False)
     OpeningHour = Column(Time, nullable=False)
     ClosingHour = Column(Time, nullable=False)
-    PhoneNumber = Column(String(20), unique=True, nullable=False)
-    Email = Column(String(100))
-    IsActive = Column(Boolean, server_default="1")
+    phoneNumber = Column(String(20), unique=True, nullable=False)
+    email = Column(String(100))
+    isActive = Column(Boolean, server_default="1")
 
     __table_args__ = (
         CheckConstraint("ClosingHour > OpeningHour", name="checkHours"),
@@ -138,7 +138,7 @@ class Orders(Base):
         ),
         nullable=False,
     )
-    CustomerID = Column(String(10), ForeignKey("Customer.CustomerID", ondelete="CASCADE"), nullable=False)
+    customerID = Column(String(10), ForeignKey("Customer.customerID", ondelete="CASCADE"), nullable=False)
     StoreID = Column(String(10), ForeignKey("Store.StoreID", ondelete="CASCADE"), nullable=False)
     DateOrder = Column(DateTime, server_default=func.current_timestamp())
     OrderStatus = Column(

@@ -10,29 +10,29 @@ from models import Customer
 router = APIRouter(prefix="/customers", tags=["Customers"])
 
 class CustomersCreate(BaseModel):
-    Age: int
-    CustomerName: str
-    Email: str
-    DateOfBirth: str
-    Phone: int
-    IsActive: bool
-    LoyaltyPoints: int
+    age: int
+    customerName: str
+    email: str
+    dateOfBirth: str
+    phone: int
+    isActive: bool
+    loyaltyPoints: int
 
 class SummaryStats(BaseModel):
     total_Customers: int
     avg_age: float
 
 class CustomerUpdate(BaseModel):
-    CustomerName: Optional[str] = None
-    DateOfBirth: Optional[str] = None
-    Phone: Optional[int] = None
-    IsActive: Optional[bool] = None
-    LoyaltyPoints: Optional[int] = None
+    customerName: Optional[str] = None
+    dateOfBirth: Optional[str] = None
+    phone: Optional[int] = None
+    isActive: Optional[bool] = None
+    loyaltyPoints: Optional[int] = None
 
 class CustomerSpending(BaseModel):
-    CustomerID: str
-    CustomerName: str
-    TotalSpent: float
+    customerID: str
+    customerName: str
+    totalSpent: float
 
 @router.get("/")
 def list_customers(db: db_dependency):
@@ -45,7 +45,7 @@ def get_summary_stats(db : db_dependency) -> SummaryStats:
         return SummaryStats(total_Customers = 0, avg_age=0)
     else :
         # TODO: convert this part to use SQL FUNCTION
-        avg_age = round(db.query(func.sum(Customer.Age)).scalar() / total_customers, 1)
+        avg_age = round(db.query(func.sum(Customer.age)).scalar() / total_customers, 1)
         return SummaryStats(total_Customers = total_customers, avg_age=avg_age)
 
 @router.get("/{id}")
@@ -72,14 +72,14 @@ def create_customers(customers: List[CustomersCreate], db : db_dependency):
 
 @router.put("/{id}")
 def update_customer(id: str, customer : CustomerUpdate, db : db_dependency):
-    db_customer = db.query(Customer).filter(Customer.CustomerID == id).first()
+    db_customer = db.query(Customer).filter(Customer.customerID == id).first()
     if not db_customer:
         raise HTTPException(status_code=404, detail="Customer not found")
-    if customer.CustomerName: db_customer.CustomerName = customer.CustomerName
-    if customer.DateOfBirth: db_customer.DateOfBirth = customer.DateOfBirth
-    if customer.Phone: db_customer.Phone = customer.Phone
-    if customer.IsActive: db_customer.IsActive = customer.IsActive
-    if customer.LoyaltyPoints: db_customer.LoyaltyPoints = customer.LoyaltyPoints
+    if customer.customerName: db_customer.customerName = customer.customerName
+    if customer.dateOfBirth: db_customer.dateOfBirth = customer.dateOfBirth
+    if customer.phone: db_customer.phone = customer.phone
+    if customer.isActive: db_customer.isActive = customer.isActive
+    if customer.loyaltyPoints: db_customer.loyaltyPoints = customer.loyaltyPoints
     db.commit()
     db.refresh(db_customer)
     return db_customer
@@ -92,7 +92,7 @@ def delete_bulk(indexes : List[str] = Body(...), db : Session = Depends(get_db))
 
 @router.delete("/{id}")
 def delete_customer(id: str, db : db_dependency):
-    db_customer = db.query(Customer).filter(Customer.CustomerID == id).first()
+    db_customer = db.query(Customer).filter(Customer.customerID == id).first()
     if not db_customer:
         raise HTTPException(status_code=404, detail="Customer not found")
     db.delete(db_customer)
@@ -118,9 +118,9 @@ def get_top_customer(top: int, db : db_dependency):
         top_customers = []
         for row in result:
             top_customers.append(CustomerSpending(
-                CustomerID=row[0],
-                CustomerName=row[1],
-                TotalSpent=row[2],
+                customerID=row[0],
+                customerName=row[1],
+                totalSpent=row[2],
             ))
 
         return top_customers
