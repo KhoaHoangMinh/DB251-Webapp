@@ -213,7 +213,6 @@ export default function OrderTable({ orders }: OrderTableProps) {
                                       <TableHead>Quantity</TableHead>
                                       <TableHead>Unit Price</TableHead>
                                       <TableHead>Line Total</TableHead>
-                                      <TableHead>Status</TableHead>
                                     </TableRow>
                                   </TableHeader>
                                   <TableBody>
@@ -223,11 +222,6 @@ export default function OrderTable({ orders }: OrderTableProps) {
                                         <TableCell>{item.quantity}</TableCell>
                                         <TableCell>${item.unitPrice.toFixed(2)}</TableCell>
                                         <TableCell>${item.lineTotal.toFixed(2)}</TableCell>
-                                        <TableCell>
-                                          <Badge variant={getStatusColor(item.orderStatus)}>
-                                            {item.orderStatus}
-                                          </Badge>
-                                        </TableCell>
                                       </TableRow>
                                     ))}
                                     <TableRow>
