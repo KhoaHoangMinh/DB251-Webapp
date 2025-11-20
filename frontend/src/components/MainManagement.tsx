@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { LogOut, Users, Package, CircleUser, ShoppingCart, Building} from 'lucide-react';
 import EmployeeManagement from './EmployeeManagement';
 import ProductManagement from './ProductManagement';
+import CustomerManagement from './CustomerManagement'
 
 interface MainManagementProps {
   currentUser: string | null;
@@ -61,7 +62,7 @@ export default function MainManagement({ currentUser, onLogout }: MainManagement
             <ProductManagement />
           </TabsContent>
           <TabsContent value="customers">
-            <ProductManagement />
+            <CustomerManagement />
           </TabsContent>
           <TabsContent value="orders">
             <ProductManagement />
