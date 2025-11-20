@@ -86,11 +86,16 @@ def update_customer(id: str, customer : CustomerUpdate, db : db_dependency):
     db_customer = db.query(Customer).filter(Customer.customerID == id).first()
     if not db_customer:
         raise HTTPException(status_code=404, detail="Customer not found")
-    if customer.customerName: db_customer.customerName = customer.customerName
-    if customer.dateOfBirth: db_customer.dateOfBirth = customer.dateOfBirth
-    if customer.phone: db_customer.phone = customer.phone
-    if customer.isActive: db_customer.isActive = customer.isActive
-    if customer.loyaltyPoints: db_customer.loyaltyPoints = customer.loyaltyPoints
+    if customer.customerName and db_customer.customerName != customer.customerName:
+        db_customer.customerName = customer.customerName
+    if customer.dateOfBirth and db_customer.dateOfBirth != customer.dateOfBirth:
+        db_customer.dateOfBirth = customer.dateOfBirth
+    if customer.phone and db_customer.phone != customer.phone:
+        db_customer.phone = customer.phone
+    if customer.isActive and db_customer.isActive != customer.isActive:
+        db_customer.isActive = customer.isActive
+    if customer.loyaltyPoints and db_customer.loyaltyPoints != customer.loyaltyPoints:
+        db_customer.loyaltyPoints = customer.loyaltyPoints
     db.commit()
     db.refresh(db_customer)
     return db_customer
