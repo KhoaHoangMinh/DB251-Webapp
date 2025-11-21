@@ -111,6 +111,9 @@ def delete_employee(id: str, db : db_dependency):
     db_employee = db.query(Employee).filter(Employee.employeeID == id).first()
     if not db_employee:
         raise HTTPException(status_code=404, detail="employee not found")
-    db.delete(db_employee)
-    db.commit()
-    return {"message": f"Employee {id} deleted successfully"}
+    try:
+        db.delete(db_employee)
+        db.commit()
+        return {"message": f"Employee {id} deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

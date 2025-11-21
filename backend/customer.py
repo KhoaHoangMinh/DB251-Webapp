@@ -114,9 +114,12 @@ def delete_customer(id: str, db : db_dependency):
     db_customer = db.query(Customer).filter(Customer.customerID == id).first()
     if not db_customer:
         raise HTTPException(status_code=404, detail="Customer not found")
-    db.delete(db_customer)
-    db.commit()
-    return {"message": f"Customer {id} deleted successfully"}
+    try:
+        db.delete(db_customer)
+        db.commit()
+        return {"message": f"Customer {id} deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/total_spending/{id}", response_model=float)
 def get_customer_total_spending(id: str, db : db_dependency):
