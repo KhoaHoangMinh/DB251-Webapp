@@ -1,13 +1,5 @@
-import { useState, useEffect } from 'react';
+import {useEffect, useState} from 'react';
 import svgPaths from '../imports/svg-2ijf4c8ns8';
-// import imgRectangle3 from 'figma:asset/3796b349f68c30f5881121394007bfd1d5fa12ac.png';
-// import imgRectangle4 from 'figma:asset/76dd060158d6b1fe3783b073b0394f9caaf7d936.png';
-// import imgRectangle5 from 'figma:asset/473cf109c5de16744da27ab1fe532e88a298c151.png';
-// import imgRectangle6 from 'figma:asset/95b4d7fad816f6024c517ca6660f0fb21102af21.png';
-// import imgRectangle7 from 'figma:asset/145cb6cef068c6de9269b418898ca5c6fcbf507b.png';
-// import imgRectangle8 from 'figma:asset/0193c0f6281560910dc42eeaf0507393821fd4b1.png';
-// import imgImage1 from 'figma:asset/a6e9b49adeaf7f41c4d30833bcdbc09e8bf03b4a.png';
-
 import imgRectangle3 from './static/swoosh.png';
 import imgRectangle4 from './static/swoosh.png';
 import imgRectangle5 from './static/swoosh.png';
@@ -18,7 +10,7 @@ import imgImage1 from './static/swoosh.png';
 import { Search, Heart, ShoppingBag, ArrowLeft } from 'lucide-react';
 import { Button } from './ui/button';
 import { CartItem } from '../App';
-import { toast } from 'sonner';
+import { toast } from 'sonner@2.0.3';
 
 const sizes = ['XS', 'S', 'L', 'ML', 'XL', '2X'];
 const colors = [
@@ -32,16 +24,6 @@ const colors = [
 
 const thumbnails = [imgRectangle4, imgRectangle5, imgRectangle6, imgRectangle7, imgRectangle8];
 
-// Map product IDs to images
-const productImages: Record<string, string> = {
-  'PRO0001': imgRectangle3,
-  'PRO0002': imgRectangle4,
-  'PRO0003': imgRectangle5,
-  'PRO0004': imgRectangle6,
-  'PRO0005': imgRectangle7,
-  'PRO0006': imgRectangle8,
-};
-
 interface Product {
   productID: string;
   productName: string;
@@ -52,6 +34,76 @@ interface Product {
   createdDate: string;
 }
 
+// Product database matching ProductManagement structure
+const productDatabase = [
+  {
+    productID: 'P001',
+    productName: 'BASIC SLIM FIT SHIRT',
+    productDescription: 'Cotton T-Shirt',
+    price: 199,
+    stockQuantity: 50,
+    isActive: true,
+    createdDate: '2025-01-01',
+    category: 'SHIRTS',
+    image: imgRectangle3
+  },
+  {
+    productID: 'P002',
+    productName: 'BASIC SLIM FIT SHIRT',
+    productDescription: 'Cotton T-Shirt',
+    price: 199,
+    stockQuantity: 45,
+    isActive: true,
+    createdDate: '2025-01-02',
+    category: 'SHIRTS',
+    image: imgRectangle4
+  },
+  {
+    productID: 'P003',
+    productName: 'BASIC SLIM FIT SHIRT',
+    productDescription: 'Cotton T-Shirt',
+    price: 199,
+    stockQuantity: 60,
+    isActive: true,
+    createdDate: '2025-01-03',
+    category: 'SHIRTS',
+    image: imgRectangle5
+  },
+  {
+    productID: 'P004',
+    productName: 'BASIC SLIM FIT SHIRT',
+    productDescription: 'Cotton T-Shirt',
+    price: 199,
+    stockQuantity: 40,
+    isActive: true,
+    createdDate: '2025-01-04',
+    category: 'SHIRTS',
+    image: imgRectangle6
+  },
+  {
+    productID: 'P005',
+    productName: 'BASIC SLIM FIT SHIRT',
+    productDescription: 'Cotton T-Shirt',
+    price: 199,
+    stockQuantity: 55,
+    isActive: true,
+    createdDate: '2025-01-05',
+    category: 'SHIRTS',
+    image: imgRectangle7
+  },
+  {
+    productID: 'P006',
+    productName: 'BASIC SLIM FIT SHIRT',
+    productDescription: 'Cotton T-Shirt',
+    price: 199,
+    stockQuantity: 35,
+    isActive: true,
+    createdDate: '2025-01-06',
+    category: 'SHIRTS',
+    image: imgRectangle8
+  },
+];
+
 interface ProductDetailProps {
   productId: string;
   onBack: () => void;
@@ -61,10 +113,10 @@ interface ProductDetailProps {
   cartItemCount: number;
 }
 
-function Header({ onBack, onNavigateToHome, onNavigateToBag, cartItemCount }: { 
-  onBack: () => void; 
+function Header({ onBack, onNavigateToHome, onNavigateToBag, cartItemCount }: {
+  onBack: () => void;
   onNavigateToHome: () => void;
-  onNavigateToBag: () => void; 
+  onNavigateToBag: () => void;
   cartItemCount: number;
 }) {
   return (
@@ -110,32 +162,25 @@ export default function ProductDetail({ productId, onBack, onNavigateToHome, onA
   const [selectedColor, setSelectedColor] = useState<number | null>(null);
   const [selectedThumbnail, setSelectedThumbnail] = useState(0);
   const [quantity, setQuantity] = useState(1);
-  const [productData, setProductData] = useState<Product | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [productData, setProductData] = useState<Product[]>([]);
 
-  useEffect(() => {
-    fetchProduct();
-  }, [productId]);
-
-  const fetchProduct = async () => {
+  const getProductData = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/products/${productId}`);
-      const data = await response.json();
+      const response = await fetch(`http://localhost:8000/products/${encodeURIComponent(productId)}`);
+      const data = await  response.json();
       setProductData(data);
     } catch (error) {
-      console.error('Error fetching product:', error);
-    } finally {
-      setLoading(false);
+      console.error('Error getting product', error);
     }
-  };
-
-  if (loading || !productData) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-600">Loading product...</p>
-      </div>
-    );
   }
+
+  useEffect(() => {
+    getProductData();
+  }, []);
+
+  // Find product from database
+  // const productData = productDatabase.find(product => product.productID === productId) || productDatabase[0];
+  // const productData = productDatabase.find(product => product.productID === productId) || productDatabase[0];
 
   const handleAddToCart = () => {
     if (selectedSize && selectedColor !== null) {
@@ -144,8 +189,8 @@ export default function ProductDetail({ productId, onBack, onNavigateToHome, onA
         productName: productData.productName,
         productDescription: productData.productDescription,
         price: productData.price,
-        category: 'NIKE',
-        image: productImages[productData.productID] || thumbnails[0],
+        category: productData.category || 'SHIRTS',
+        image: productData.image || thumbnails[0],
         size: selectedSize,
         color: colors[selectedColor].name,
         quantity,
@@ -178,10 +223,10 @@ export default function ProductDetail({ productId, onBack, onNavigateToHome, onA
           <div className="bg-white rounded-lg shadow-sm border p-6">
             {/* Main Image */}
             <div className="w-full aspect-square bg-gray-100 rounded-lg overflow-hidden mb-4">
-              <img 
-                alt="Product" 
-                className="w-full h-full object-cover" 
-                src={productImages[productData.productID] || thumbnails[selectedThumbnail]} 
+              <img
+                alt="Product"
+                className="w-full h-full object-cover"
+                src={productData.image || thumbnails[selectedThumbnail]}
               />
             </div>
 
