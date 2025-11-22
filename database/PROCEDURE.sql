@@ -90,7 +90,7 @@ END;
 GO
 
 -- Procedure 4: Get Top N Best Selling Product
-CREATE PROCEDURE sp_GetTopSellingProductsByQuantity
+CREATE PROCEDURE GetTopSellingProductsByQuantity
     @TopN INT
 AS
 BEGIN

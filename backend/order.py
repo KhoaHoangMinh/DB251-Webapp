@@ -126,3 +126,13 @@ def get_order_detail(id: str, db: db_dependency):
         return order_detail
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/calculate_estimated_delivery/{id}")
+def calculate_estimated_delivery(id: str, db: db_dependency):
+    try:
+        query = text("SELECT dbo.CalculateEstimatedDelivery(:id)")
+        result = db.execute(query, {"id" : id}).fetchall()
+
+        return result[0][0]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
