@@ -174,10 +174,8 @@ function ProductCard({ product, onClick }: { product: Product; onClick: () => vo
 
 export default function Shop({ onProductClick, onBackToManagement, onNavigateToHome, onNavigateToBag, cartItemCount }: ShopProps) {
   const [products, setProducts] = useState<Product[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-
-  useEffect(() => {
-    const fetchProducts = async () => {
+  const [searchTerm, setsearchTerm] = useState('');
+  const fetchProducts = async () => {
       try {
         const response = await fetch('http://localhost:8000/products'); // Adjust the URL if needed
         const data = await response.json();
@@ -186,9 +184,23 @@ export default function Shop({ onProductClick, onBackToManagement, onNavigateToH
         console.error('Error fetching products:', error);
       }
     };
+    const searchProducts = async (term: string) => {
+      try {
+        const response = await fetch(`http://localhost:8000/products/search?search=${encodeURIComponent(term)}`);
+        const data = await response.json();
+        setProducts(data);
+      } catch (error) {
+        console.error('Error searching products:', error);
+      }
+  };
 
-    fetchProducts();
-  }, []);
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+        fetchProducts();
+    } else {
+        searchProducts(searchTerm);
+    }
+  }, [searchTerm]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -214,8 +226,8 @@ export default function Shop({ onProductClick, onBackToManagement, onNavigateToH
             <input
               type="text"
               placeholder="Search products..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={searchTerm}
+              onChange={(e) => setsearchTerm(e.target.value)}
               className="w-full h-10 pl-10 pr-4 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
             />
           </div>
