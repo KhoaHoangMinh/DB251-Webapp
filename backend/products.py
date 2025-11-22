@@ -93,8 +93,10 @@ def delete_product(product_id: str, db: db_dependency):
     product = db.query(Product).filter(Product.productID == product_id).first()
     if not product:
         raise HTTPException(status_code=404, detail="Invalid product ID")
-    db.delete(product)
-    db.commit()
-    return {"message": f"Product {product_id} deleted successfully"}
-
+    try:
+        db.delete(product)
+        db.commit()
+        return {"message": f"Product {product_id} deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 

@@ -17,6 +17,8 @@ DROP SEQUENCE Seq_StoreID;
 DROP FUNCTION GetCustomerTotalSpending;
 DROP FUNCTION GetAveragePriceByStore;
 DROP FUNCTION GetOrderSummary;
+DROP FUNCTION GetSummaryStatsForCustomers;
+DROP FUNCTION GetSummaryStatsForEmployee;
 
 DROP PROCEDURE GetTopCustomers;
 DROP PROCEDURE UpdateStockAfterOrder;

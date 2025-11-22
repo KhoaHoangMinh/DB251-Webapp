@@ -40,13 +40,27 @@ def list_customers(db: db_dependency):
 
 @router.get("/stats", response_model=SummaryStats)
 def get_summary_stats(db : db_dependency) -> SummaryStats:
-    total_customers = db.query(Customer).count()
-    if total_customers == 0 :
-        return SummaryStats(total_Customers = 0, avg_age=0)
-    else :
-        # TODO: convert this part to use SQL FUNCTION
-        avg_age = round(db.query(func.sum(Customer.age)).scalar() / total_customers, 1)
-        return SummaryStats(total_Customers = total_customers, avg_age=avg_age)
+    try:
+        query = text("SELECT * FROM dbo.GetSummaryStatsForCustomers()")
+        result = db.execute(query).fetchone()
+
+        return SummaryStats(
+            total_Customers=result.total_customer,
+            avg_age=result.avg_age,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+def search_cond(a, b):
+    return (a.lower() in b.customerID.lower()
+            or a.lower() in b.customerName.lower()
+            or a.lower() in b.email.lower()
+            or a.lower() in b.phone.lower())
+@router.get('/search')
+def search_customer(search: str, db: db_dependency):
+    customers = db.query(Customer).all()
+    customers = [e for e in customers if search_cond(search, e)]
+    return customers
 
 def search_cond(a, b):
     return (a.lower() in b.customerID.lower()
@@ -111,9 +125,12 @@ def delete_customer(id: str, db : db_dependency):
     db_customer = db.query(Customer).filter(Customer.customerID == id).first()
     if not db_customer:
         raise HTTPException(status_code=404, detail="Customer not found")
-    db.delete(db_customer)
-    db.commit()
-    return {"message": f"Customer {id} deleted successfully"}
+    try:
+        db.delete(db_customer)
+        db.commit()
+        return {"message": f"Customer {id} deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/total_spending/{id}", response_model=float)
 def get_customer_total_spending(id: str, db : db_dependency):
