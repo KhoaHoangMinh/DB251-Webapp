@@ -216,7 +216,7 @@
 
   img, svg, video, canvas, audio, iframe, embed, object {
     vertical-align: middle;
-    display: block;
+    /*display: block;*/
   }
 
   img, video {
@@ -558,6 +558,7 @@
 
   .grid {
     display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .inline-flex {
