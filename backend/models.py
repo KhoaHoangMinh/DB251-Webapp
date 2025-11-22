@@ -176,3 +176,30 @@ class OrderItem(Base):
 
     order = relationship("Orders", back_populates="items")
     product = relationship("Product", back_populates="order_items")
+
+class CartItem(Base):
+    __tablename__ = 'CartItem'
+
+    cartID = Column(String(10), ForeignKey("Cart.cartID", ondelete="CASCADE"), primary_key=True)
+    productID = Column(String(10), ForeignKey("Product.productID", ondelete="CASCADE"), primary_key=True)
+    quantity = Column(Integer, nullable=False)
+    unitPrice = Column(DECIMAL(10, 2), nullable=False)
+    lineTotal = Column(DECIMAL(10, 2))
+
+    __table_args__ = (
+        CheckConstraint("quantity > 0", name="checkQuantity"),
+        CheckConstraint("unitPrice >= 0", name="checkUnitPrice"),
+    )
+
+class Cart(Base):
+    __tablename__ = 'Cart'
+
+    cartID = Column(
+        String(10),
+        primary_key=True,
+        server_default=text(
+            "('CRT' + RIGHT('0000' + CAST(NEXT VALUE FOR Seq_OrderID AS VARCHAR(4)), 4))"
+        ),
+        nullable=False,
+    )
+    customerID = Column(String(10), ForeignKey("Customer.customerID", ondelete="CASCADE"), nullable=False)
