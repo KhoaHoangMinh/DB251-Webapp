@@ -34,76 +34,6 @@ interface Product {
   createdDate: string;
 }
 
-// Product database matching ProductManagement structure
-const productDatabase = [
-  {
-    productID: 'P001',
-    productName: 'BASIC SLIM FIT SHIRT',
-    productDescription: 'Cotton T-Shirt',
-    price: 199,
-    stockQuantity: 50,
-    isActive: true,
-    createdDate: '2025-01-01',
-    category: 'SHIRTS',
-    image: imgRectangle3
-  },
-  {
-    productID: 'P002',
-    productName: 'BASIC SLIM FIT SHIRT',
-    productDescription: 'Cotton T-Shirt',
-    price: 199,
-    stockQuantity: 45,
-    isActive: true,
-    createdDate: '2025-01-02',
-    category: 'SHIRTS',
-    image: imgRectangle4
-  },
-  {
-    productID: 'P003',
-    productName: 'BASIC SLIM FIT SHIRT',
-    productDescription: 'Cotton T-Shirt',
-    price: 199,
-    stockQuantity: 60,
-    isActive: true,
-    createdDate: '2025-01-03',
-    category: 'SHIRTS',
-    image: imgRectangle5
-  },
-  {
-    productID: 'P004',
-    productName: 'BASIC SLIM FIT SHIRT',
-    productDescription: 'Cotton T-Shirt',
-    price: 199,
-    stockQuantity: 40,
-    isActive: true,
-    createdDate: '2025-01-04',
-    category: 'SHIRTS',
-    image: imgRectangle6
-  },
-  {
-    productID: 'P005',
-    productName: 'BASIC SLIM FIT SHIRT',
-    productDescription: 'Cotton T-Shirt',
-    price: 199,
-    stockQuantity: 55,
-    isActive: true,
-    createdDate: '2025-01-05',
-    category: 'SHIRTS',
-    image: imgRectangle7
-  },
-  {
-    productID: 'P006',
-    productName: 'BASIC SLIM FIT SHIRT',
-    productDescription: 'Cotton T-Shirt',
-    price: 199,
-    stockQuantity: 35,
-    isActive: true,
-    createdDate: '2025-01-06',
-    category: 'SHIRTS',
-    image: imgRectangle8
-  },
-];
-
 interface ProductDetailProps {
   productId: string;
   onBack: () => void;
@@ -177,10 +107,6 @@ export default function ProductDetail({ productId, onBack, onNavigateToHome, onA
   useEffect(() => {
     getProductData();
   }, []);
-
-  // Find product from database
-  // const productData = productDatabase.find(product => product.productID === productId) || productDatabase[0];
-  // const productData = productDatabase.find(product => product.productID === productId) || productDatabase[0];
 
   const handleAddToCart = () => {
     if (selectedSize && selectedColor !== null) {
