@@ -62,6 +62,17 @@ def search_customer(search: str, db: db_dependency):
     customers = [e for e in customers if search_cond(search, e)]
     return customers
 
+def search_cond(a, b):
+    return (a.lower() in b.customerID.lower()
+            or a.lower() in b.customerName.lower()
+            or a.lower() in b.email.lower()
+            or a.lower() in b.phone.lower())
+@router.get('/search')
+def search_customer(search: str, db: db_dependency):
+    customers = db.query(Customer).all()
+    customers = [e for e in customers if search_cond(search, e)]
+    return customers
+
 @router.get("/{id}")
 def view_customer(id: str, db : db_dependency):
     customer = db.query(Customer).get(id)

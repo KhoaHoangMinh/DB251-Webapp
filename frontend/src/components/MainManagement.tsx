@@ -1,15 +1,18 @@
 import { Button } from './ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { LogOut, Users, Package, CircleUser, ShoppingCart, Building} from 'lucide-react';
+import { LogOut, Users, Package, CircleUser, ShoppingCart, Building, Globe} from 'lucide-react';
 import EmployeeManagement from './EmployeeManagement';
 import ProductManagement from './ProductManagement';
+import CustomerManagement from './CustomerManagement'
+import OrderManagement from './OrderManagement'
 
 interface MainManagementProps {
   currentUser: string | null;
   onLogout: () => void;
+  onNavigateToShop?: () => void;
 }
 
-export default function MainManagement({ currentUser, onLogout }: MainManagementProps) {
+export default function MainManagement({ currentUser, onLogout, onNavigateToShop,}: MainManagementProps) {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -20,10 +23,20 @@ export default function MainManagement({ currentUser, onLogout }: MainManagement
               <h1 className="text-gray-900">Management System</h1>
               <p className="text-sm text-gray-600 mt-1">Logged in as: {currentUser}</p>
             </div>
-            <Button onClick={onLogout} variant="outline">
-              <LogOut className="w-4 h-4 mr-2" />
-              Log Out
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={onNavigateToShop}
+                variant="outline"
+              >
+                <Globe className="w-4 h-4 mr-2" />
+                nike.com
+              </Button>
+              <Button onClick={onLogout} variant="outline">
+                <LogOut className="w-4 h-4 mr-2" />
+                Log Out
+              </Button>
+            </div>
+
           </div>
         </div>
       </header>
@@ -61,10 +74,10 @@ export default function MainManagement({ currentUser, onLogout }: MainManagement
             <ProductManagement />
           </TabsContent>
           <TabsContent value="customers">
-            <ProductManagement />
+            <CustomerManagement />
           </TabsContent>
           <TabsContent value="orders">
-            <ProductManagement />
+            <OrderManagement />
           </TabsContent>
           <TabsContent value="stores">
             <ProductManagement />
