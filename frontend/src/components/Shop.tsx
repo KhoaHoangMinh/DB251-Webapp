@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import imgImage1 from './static/swoosh.png';
-import { Search, Heart, ShoppingBag, ArrowLeft, Home } from 'lucide-react';
+import { Search, ShoppingBag, Home } from 'lucide-react';
 import { Button } from './ui/button';
 
 interface Product {
@@ -11,10 +11,10 @@ interface Product {
   stockQuantity: number;
   isActive: boolean;
   createdDate: string;
-  category?: string;
 }
 
-const products: Product[] = [
+// Commented database remains intact
+const productsDatabase: Product[] = [
   {
     productID: 'P001',
     productName: 'BASIC SLIM FIT SHIRT',
@@ -23,7 +23,6 @@ const products: Product[] = [
     stockQuantity: 50,
     isActive: true,
     createdDate: '2025-01-01',
-    category: 'SHIRTS'
   },
   {
     productID: 'P002',
@@ -33,7 +32,6 @@ const products: Product[] = [
     stockQuantity: 45,
     isActive: true,
     createdDate: '2025-01-02',
-    category: 'SHIRTS'
   },
   {
     productID: 'P003',
@@ -43,7 +41,6 @@ const products: Product[] = [
     stockQuantity: 60,
     isActive: true,
     createdDate: '2025-01-03',
-    category: 'SHIRTS'
   },
   {
     productID: 'P004',
@@ -53,7 +50,6 @@ const products: Product[] = [
     stockQuantity: 40,
     isActive: true,
     createdDate: '2025-01-04',
-    category: 'SHIRTS'
   },
   {
     productID: 'P005',
@@ -63,7 +59,6 @@ const products: Product[] = [
     stockQuantity: 55,
     isActive: true,
     createdDate: '2025-01-05',
-    category: 'SHIRTS'
   },
   {
     productID: 'P006',
@@ -73,7 +68,6 @@ const products: Product[] = [
     stockQuantity: 35,
     isActive: true,
     createdDate: '2025-01-06',
-    category: 'SHIRTS'
   },
 ];
 
@@ -156,60 +150,6 @@ function Sidebar() {
           ))}
         </div>
       </div>
-
-      {/* Category Filter */}
-      <div>
-        <h3 className="text-sm text-gray-900 mb-3">Category</h3>
-        <div className="space-y-2">
-          <label className="flex items-center">
-            <input type="checkbox" className="rounded border-gray-300 text-gray-900 focus:ring-gray-900" />
-            <span className="ml-2 text-sm text-gray-700">Shirts</span>
-          </label>
-          <label className="flex items-center">
-            <input type="checkbox" className="rounded border-gray-300 text-gray-900 focus:ring-gray-900" />
-            <span className="ml-2 text-sm text-gray-700">Shorts</span>
-          </label>
-          <label className="flex items-center">
-            <input type="checkbox" className="rounded border-gray-300 text-gray-900 focus:ring-gray-900" />
-            <span className="ml-2 text-sm text-gray-700">Polo Shirts</span>
-          </label>
-          <label className="flex items-center">
-            <input type="checkbox" className="rounded border-gray-300 text-gray-900 focus:ring-gray-900" />
-            <span className="ml-2 text-sm text-gray-700">Jackets</span>
-          </label>
-        </div>
-      </div>
-
-      {/* Price Range Filter */}
-      <div>
-        <h3 className="text-sm text-gray-900 mb-3">Price Range</h3>
-        <div className="space-y-2">
-          <label className="flex items-center">
-            <input type="checkbox" className="rounded border-gray-300 text-gray-900 focus:ring-gray-900" />
-            <span className="ml-2 text-sm text-gray-700">Under $100</span>
-          </label>
-          <label className="flex items-center">
-            <input type="checkbox" className="rounded border-gray-300 text-gray-900 focus:ring-gray-900" />
-            <span className="ml-2 text-sm text-gray-700">$100 - $200</span>
-          </label>
-          <label className="flex items-center">
-            <input type="checkbox" className="rounded border-gray-300 text-gray-900 focus:ring-gray-900" />
-            <span className="ml-2 text-sm text-gray-700">Over $200</span>
-          </label>
-        </div>
-      </div>
-
-      {/* Colors Filter */}
-      <div>
-        <h3 className="text-sm text-gray-900 mb-3">Colors</h3>
-        <div className="flex gap-2 flex-wrap">
-          <button className="w-8 h-8 rounded-full border-2 border-gray-300 bg-black hover:border-gray-900"></button>
-          <button className="w-8 h-8 rounded-full border-2 border-gray-300 bg-white hover:border-gray-900"></button>
-          <button className="w-8 h-8 rounded-full border-2 border-gray-300 bg-gray-400 hover:border-gray-900"></button>
-          <button className="w-8 h-8 rounded-full border-2 border-gray-300 bg-blue-600 hover:border-gray-900"></button>
-          <button className="w-8 h-8 rounded-full border-2 border-gray-300 bg-red-600 hover:border-gray-900"></button>
-        </div>
-      </div>
     </div>
   );
 }
@@ -233,7 +173,22 @@ function ProductCard({ product, onClick }: { product: Product; onClick: () => vo
 }
 
 export default function Shop({ onProductClick, onBackToManagement, onNavigateToHome, onNavigateToBag, cartItemCount }: ShopProps) {
+  const [products, setProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/products'); // Adjust the URL if needed
+        const data = await response.json();
+        setProducts(data);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -280,14 +235,13 @@ export default function Shop({ onProductClick, onBackToManagement, onNavigateToH
               </select>
             </div>
 
-            {/*<div className="grid grid-cols-4 gap-6">*/}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {products.map((product) => (
-                  <ProductCard
-                      key={product.productID}
-                      product={product}
-                      onClick={() => onProductClick(product.productID)}
-                  />
+                <ProductCard 
+                  key={product.productID} 
+                  product={product} 
+                  onClick={() => onProductClick(product.productID)}
+                />
               ))}
             </div>
           </div>
