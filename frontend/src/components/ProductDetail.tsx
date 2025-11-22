@@ -251,48 +251,10 @@ export default function ProductDetail({ productId, onBack, onNavigateToHome, onA
             <div className="space-y-6">
               {/* Title and Price */}
               <div>
-                <h1 className="text-gray-900 mb-2">{productData.productName}</h1>
+                <h className="text-gray-900 text-xl font-semibold mb-2">{productData.productName}</h>
                 <p className="text-sm text-gray-600 mb-2">{productData.productDescription}</p>
                 <p className="text-gray-900">${productData.price}</p>
                 <p className="text-sm text-gray-600 mt-1">Stock: {productData.stockQuantity} available</p>
-              </div>
-
-              {/* Colors */}
-              <div>
-                <h3 className="text-sm text-gray-900 mb-3">Color</h3>
-                <div className="flex gap-2">
-                  {colors.map((colorItem, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setSelectedColor(idx)}
-                      className={`w-12 h-12 rounded-lg border-2 transition-all ${
-                        selectedColor === idx ? 'border-gray-900 scale-110' : 'border-gray-300 hover:border-gray-400'
-                      }`}
-                      style={{ backgroundColor: colorItem.color }}
-                      title={colorItem.name}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* Sizes */}
-              <div>
-                <h3 className="text-sm text-gray-900 mb-3">Size</h3>
-                <div className="flex gap-2">
-                  {sizes.map((size) => (
-                    <button
-                      key={size}
-                      onClick={() => setSelectedSize(size === selectedSize ? null : size)}
-                      className={`w-14 h-12 border rounded-lg flex items-center justify-center transition-colors ${
-                        selectedSize === size 
-                          ? 'bg-gray-900 text-white border-gray-900' 
-                          : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
-                      }`}
-                    >
-                      <span className="text-sm">{size}</span>
-                    </button>
-                  ))}
-                </div>
               </div>
 
               {/* Quantity */}
