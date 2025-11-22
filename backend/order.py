@@ -9,66 +9,77 @@ from models import Product
 from database import db_dependency
 from models import Orders, OrderItem
 
-router = APIRouter(prefix='/order', tags=["Order"])
+router = APIRouter(prefix='/orders', tags=["Orders"])
 
 class ItemInfo(BaseModel):
-    ProductID: str
-    Quantity: int
-    UnitPrice: float
-    LineTotal: float
+    productID: str
+    quantity: int
+    unitPrice: float
+    lineTotal: float
 
 class OrderInfo(BaseModel):
-    OrderID: str
-    CustomerID: str
-    StoreID: str
-    DateOrder: datetime.datetime
-    OrderStatus: str
-    ItemList: List[ItemInfo]
+    orderID: str
+    customerID: str
+    storeID: str
+    dateOrder: datetime.datetime
+    orderStatus: str
+    itemList: List[ItemInfo]
 
 class OrderSummary(BaseModel):
-    OrderID: str
-    TotalQuantity: int
-    TotalAmount: float
+    orderID: str
+    totalQuantity: int
+    totalAmount: float
 
 class ItemDetail(BaseModel):
-    ProductName: str
-    Quantity: int
-    UnitPrice: float
-    LineTotal: float
-    OrderStatus: str
+    productName: str
+    quantity: int
+    unitPrice: float
+    lineTotal: float
+    orderStatus: str
 
 class OrderDetails(BaseModel):
-    OrderID: str
-    DateOrder: datetime.datetime
-    CustomerName: str
-    StoreName: str
-    ItemList: List[ItemDetail]
+    orderID: str
+    dateOrder: datetime.datetime
+    customerName: str
+    storeName: str
+    itemList: List[ItemDetail]
 
 @router.get('/')
 def list_orders(db: db_dependency):
     return db.query(Orders).all()
 
+def search_cond(a, b):
+    return (a.lower() in b.orderID.lower()
+            or a.lower() in b.customerID.lower()
+            or a.lower() in b.storeID.lower()
+            or a.lower() in b.orderStatus.lower())
+@router.get('/search')
+def search_order(search: str, db: db_dependency):
+    orders = db.query(Orders).all()
+    orders = [e for e in orders if search_cond(search, e)]
+    return orders
+
 @router.get('/{id}')
 def view_order(id: str, db: db_dependency):
-    order = db.query(Orders).filter(Orders.OrderID == id).first()
+    order = db.query(Orders).filter(Orders.orderID == id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
-    items = db.query(OrderItem).filter(OrderItem.OrderID == id).all()
+    items = db.query(OrderItem).filter(OrderItem.orderID == id).all()
     item_list = [
         ItemInfo(
-            ProductID=item.ProductID,
-            Quantity=item.Quantity,
-            UnitPrice=item.UnitPrice,
-            LineTotal=item.LineTotal
+            productID=item.productID,
+            quantity=item.quantity,
+            unitPrice=item.unitPrice,
+            lineTotal=item.lineTotal
         )
         for item in items
     ]
-    return OrderInfo(OrderID=order.OrderID,
-                    CustomerID=order.CustomerID,
-                    StoreID=order.StoreID,
-                    DateOrder=order.DateOrder,
-                    OrderStatus=order.OrderStatus,
-                    ItemList=item_list
+    return OrderInfo(orderID=order.orderID,
+                    customerID=order.customerID,
+                    storeID=order.storeID,
+                    dateOrder=order.dateOrder,
+                    orderStatus=order.orderStatus,
+                    itemList=item_list
     )
 @router.get('/order_summary/{id}')
 def get_order_summary(id: str, db: db_dependency):
@@ -79,9 +90,9 @@ def get_order_summary(id: str, db: db_dependency):
         order_detail = []
         for row in result:
             order_detail.append(OrderSummary(
-                OrderID=row[0],
-                TotalQuantity=row[1],
-                TotalAmount=row[2],
+                orderID=row[0],
+                totalQuantity=row[1],
+                totalAmount=row[2],
             ))
 
         return order_detail
@@ -99,7 +110,7 @@ def update_stock_after_order(id: str, db: db_dependency):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get('/order_detail/{id}')
+@router.get('/details/{id}')
 def get_order_detail(id: str, db: db_dependency):
     try:
         query = text("EXEC dbo.GetOrderProductDetails @OrderID=:id")
@@ -108,19 +119,19 @@ def get_order_detail(id: str, db: db_dependency):
         item_detail = []
         for row in result:
             item_detail.append(ItemDetail(
-                ProductName=row[4],
-                Quantity=row[5],
-                UnitPrice=row[6],
-                LineTotal=row[7],
-                OrderStatus=row[8]
+                productName=row[4],
+                quantity=row[5],
+                unitPrice=row[6],
+                lineTotal=row[7],
+                orderStatus=row[8]
             ))
 
         order_detail = OrderDetails(
-            OrderID = result[0][0],
-            DateOrder = result[0][1],
-            CustomerName = result[0][2],
-            StoreName = result[0][3],
-            ItemList = item_detail
+            orderID = result[0][0],
+            dateOrder = result[0][1],
+            customerName = result[0][2],
+            storeName = result[0][3],
+            itemList = item_detail
         )
 
         return order_detail
