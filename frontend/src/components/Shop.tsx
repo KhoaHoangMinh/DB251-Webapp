@@ -176,13 +176,13 @@ export default function Shop({ onProductClick, onBackToManagement, onNavigateToH
   const [products, setProducts] = useState<Product[]>([]);
   const [searchTerm, setsearchTerm] = useState('');
   const fetchProducts = async () => {
-      try {
-        const response = await fetch('http://localhost:8000/products'); // Adjust the URL if needed
-        const data = await response.json();
-        setProducts(data);
-      } catch (error) {
-        console.error('Error fetching products:', error);
-      }
+    try {
+      const response = await fetch('http://localhost:8000/products'); // Adjust the URL if needed
+      const data = await response.json();
+      setProducts(data);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    }
     };
     const searchProducts = async (term: string) => {
       try {
