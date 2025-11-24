@@ -1,5 +1,5 @@
 from sqlalchemy import Column, String, Integer, Date, DateTime, Time, Boolean, DECIMAL, Text, CheckConstraint, \
-    ForeignKey, Sequence, text
+    ForeignKey, Sequence, text, FetchedValue
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -184,7 +184,7 @@ class CartItem(Base):
     productID = Column(String(10), ForeignKey("Product.productID", ondelete="CASCADE"), primary_key=True)
     quantity = Column(Integer, nullable=False)
     unitPrice = Column(DECIMAL(10, 2), nullable=False)
-    lineTotal = Column(DECIMAL(10, 2))
+    lineTotal = Column(DECIMAL(10, 2), FetchedValue())
 
     __table_args__ = (
         CheckConstraint("quantity > 0", name="checkQuantity"),
