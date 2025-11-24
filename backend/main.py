@@ -10,6 +10,7 @@ from employees import router as employee_router
 from customer import router as customer_router
 from order import router as order_router
 from stores import router as stores_router
+from cart import router as cart_router
 
 import models
 from database import engine, SessionLocal
@@ -40,6 +41,7 @@ app.include_router(employee_router)
 app.include_router(customer_router)
 app.include_router(order_router)
 app.include_router(stores_router)
+app.include_router(cart_router)
 
 # Mount static files
 # app.mount("/static", StaticFiles(directory="static"), name="static")
