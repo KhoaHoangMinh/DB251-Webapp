@@ -7,7 +7,7 @@ from sqlalchemy import text
 
 from models import Product
 from database import db_dependency
-from models import Orders, OrderItem
+from models import Orders, OrderItem, Cart, CartItem
 
 router = APIRouter(prefix='/orders', tags=["Orders"])
 
@@ -137,3 +137,20 @@ def get_order_detail(id: str, db: db_dependency):
         return order_detail
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.post('/')
+def create_order(db: db_dependency):
+    # Note: customerID, storeID, orderStatus are hard coded
+    created_order = Orders(
+        customerID='CUS0001',
+        storeID='STO0001',
+        orderStatus='Pending'
+    )
+    db.add(created_order)
+    db.commit()
+    db.refresh(created_order)
+    # TODO: fix error when create order:
+    # The target table 'Orders' of the DML statement
+    # cannot have any enabled triggers if the statement
+    # contains an OUTPUT clause without INTO clause
+    return created_order
