@@ -34,6 +34,17 @@ BEGIN
         RETURN;
     END
 
+    IF NOT EXISTS (
+        SELECT 1
+        FROM Orders
+        WHERE OrderID = @OrderID
+          AND OrderStatus = 'Delivered'
+    )
+    BEGIN
+        PRINT 'Order not delivered yet. Stock not updated.';
+        RETURN;
+    END
+
     DECLARE @ProductID VARCHAR(10), @Qty INT;
 
     DECLARE order_cursor CURSOR FOR

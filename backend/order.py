@@ -1,12 +1,13 @@
 import datetime
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Body, Depends
 from typing import Optional, Dict, List, Annotated
 from pydantic import BaseModel
 from sqlalchemy import text
+from sqlalchemy.orm import Session
 
 from models import Product
-from database import db_dependency
+from database import db_dependency, get_db
 from models import Orders, OrderItem
 
 router = APIRouter(prefix='/orders', tags=["Orders"])
@@ -43,6 +44,16 @@ class OrderDetails(BaseModel):
     customerName: str
     storeName: str
     itemList: List[ItemDetail]
+
+class OrderCreate(BaseModel):
+    customerID: str
+    storeID: str
+    orderStatus: str
+
+class OrderUpdate(BaseModel):
+    customerID: Optional[str] = None
+    storeID: Optional[str] = None
+    orderStatus: Optional[str] = None
 
 @router.get('/')
 def list_orders(db: db_dependency):
@@ -148,19 +159,70 @@ def calculate_estimated_delivery(id: str, db: db_dependency):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post('/')
-def create_order(db: db_dependency):
-    # Note: customerID, storeID, orderStatus are hard coded
-    created_order = Orders(
-        customerID='CUS0001',
-        storeID='STO0001',
-        orderStatus='Pending'
-    )
-    db.add(created_order)
+@router.post('/', status_code=status.HTTP_201_CREATED)
+def create_order(new_order: OrderCreate, db: db_dependency):
+
+    insert_query = text("""
+            INSERT INTO Orders (customerID, storeID, orderStatus)
+            VALUES (:customerID, :storeID, :orderStatus)
+        """)
+
+    db.execute(insert_query, {
+        'customerID': new_order.customerID,
+        'storeID': new_order.storeID,
+        'orderStatus': new_order.orderStatus,
+    })
     db.commit()
-    db.refresh(created_order)
-    # TODO: fix error when create order:
-    # The target table 'Orders' of the DML statement
-    # cannot have any enabled triggers if the statement
-    # contains an OUTPUT clause without INTO clause
-    return created_order
+
+    latest_order = db.query(Orders).order_by(Orders.orderID.desc()).first()
+    db.refresh(latest_order)
+
+    return latest_order
+
+@router.post("/bulk", status_code = status.HTTP_201_CREATED)
+def create_orders(orders: List[OrderCreate], db: db_dependency):
+    #TODO: insert successfully but the return values is missing
+    created = []
+    for order in orders:
+        new_order = create_order(order, db)
+        created.append(new_order)
+    return created
+
+@router.delete("/{id}")
+def delete_order(id: str, db: db_dependency):
+    db_order = db.query(Orders).filter(Orders.orderID == id).first()
+    if not db_order:
+        raise HTTPException(status_code=404, detail="order not found")
+    try:
+        db.delete(db_order)
+        db.commit()
+        return {"message": f"Order {id} deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/bulk", status_code=status.HTTP_200_OK)
+def delete_orders(indexes : List[str] = Body(...), db : Session = Depends(get_db)):
+    for index in indexes:
+        delete_order(index, db)
+    return {"message": "success"}
+
+@router.put("/{id}", status_code=status.HTTP_200_OK)
+def order_update(id: str, order: OrderUpdate, db: db_dependency):
+    db_order = db.query(Orders).filter(Orders.orderID == id).first()
+
+    if not db_order:
+        raise HTTPException(status_code=404, detail="order not found")
+
+    try:
+        if order.orderStatus and db_order.orderStatus != order.orderStatus:
+            db_order.orderStatus = order.orderStatus
+        if order.customerID and db_order.customerID != order.customerID:
+            db_order.customerID = order.customerID
+        if order.storeID and db_order.storeID != order.storeID:
+            db_order.storeID = order.storeID
+
+        db.commit()
+        db.refresh(db_order)
+        return db_order
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
