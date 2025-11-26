@@ -54,6 +54,23 @@ function CartItemCard({
   onRemove: () => void;
   onUpdateQuantity: (quantity: number) => void;
 }) {
+  const [productName, setProductName] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProductName = async () => {
+      try {
+        const response = await fetch(`http://localhost:8000/products/${item.productID}`);
+        const product = await response.json();
+        setProductName(product.productName);
+      } catch (error) {
+        console.error('Error fetching product name:', error);
+        setProductName('Unknown Product');
+      }
+    };
+
+    fetchProductName();
+  }, [item.productID]);
+
   return (
     <div className="bg-white rounded-lg shadow-sm border p-6">
       <div className="flex gap-6">
@@ -61,8 +78,10 @@ function CartItemCard({
         <div className="flex-1 flex flex-col">
           <div className="flex justify-between">
             <div>
-              <h3 className="text-gray-900 mb-1">{item.productName}</h3>
+              <h3 className="text-gray-900 mb-1">{productName || 'Loading...'}</h3>
               <p className="text-sm text-gray-600 mb-2">{item.productDescription}</p>
+              <p className="text-sm text-gray-600 mb-1">Product ID: {item.productID}</p>
+              <p className="text-sm text-gray-600 mb-1">Cart ID: {item.cartID}</p>
             </div>
             <div className="text-right">
               <p className="text-gray-900">${item.unitPrice.toFixed(2)}</p>
