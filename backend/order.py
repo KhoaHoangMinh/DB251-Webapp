@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from models import Product
 from database import db_dependency, get_db
-from models import Orders, OrderItem
+from models import Orders, OrderItem, Cart, CartItem
 
 router = APIRouter(prefix='/orders', tags=["Orders"])
 
@@ -54,6 +54,12 @@ class OrderUpdate(BaseModel):
     customerID: Optional[str] = None
     storeID: Optional[str] = None
     orderStatus: Optional[str] = None
+
+class OrderItemCreate(BaseModel):
+    orderID: str
+    productID: str
+    quantity: int
+    unitPrice: float
 
 @router.get('/')
 def list_orders(db: db_dependency):
@@ -159,13 +165,24 @@ def calculate_estimated_delivery(id: str, db: db_dependency):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post('/', status_code=status.HTTP_201_CREATED)
-def create_order(new_order: OrderCreate, db: db_dependency):
+def create_order_item(item_create: OrderItemCreate, db: db_dependency):
+    db_item = OrderItem(**item_create.model_dump())
+    db.add(db_item)
+    db.commit()
+    db.refresh(db_item)
+    return db_item
 
+def create_order_items(cartID: str, orderID: str, db: db_dependency):
+    items = db.query(CartItem).filter(CartItem.cartID == cartID).all()
+    for item in items:
+        create_order_item(OrderItemCreate(orderID=orderID, productID=item.productID, quantity=item.quantity, unitPrice=item.unitPrice), db)
+    return
+
+def create_order_helper(new_order: OrderCreate, db: db_dependency):
     insert_query = text("""
-            INSERT INTO Orders (customerID, storeID, orderStatus)
-            VALUES (:customerID, :storeID, :orderStatus)
-        """)
+                INSERT INTO Orders (customerID, storeID, orderStatus)
+                VALUES (:customerID, :storeID, :orderStatus)
+            """)
 
     db.execute(insert_query, {
         'customerID': new_order.customerID,
@@ -176,8 +193,14 @@ def create_order(new_order: OrderCreate, db: db_dependency):
 
     latest_order = db.query(Orders).order_by(Orders.orderID.desc()).first()
     db.refresh(latest_order)
-
     return latest_order
+
+@router.post('/', status_code=status.HTTP_201_CREATED)
+def create_order(new_order: OrderCreate, db: db_dependency):
+    created_order = create_order_helper(new_order, db)
+    cartID = db.query(Cart).filter(Cart.customerID == new_order.customerID).first().cartID
+    create_order_items(cartID, created_order.orderID, db)
+    return {"message" : "success"}
 
 @router.post("/bulk", status_code = status.HTTP_201_CREATED)
 def create_orders(orders: List[OrderCreate], db: db_dependency):
