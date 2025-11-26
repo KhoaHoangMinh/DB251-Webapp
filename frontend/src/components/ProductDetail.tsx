@@ -12,16 +12,6 @@ import { Button } from './ui/button';
 import { CartItem } from '../App';
 import { toast } from 'sonner@2.0.3';
 
-const sizes = ['XS', 'S', 'L', 'ML', 'XL', '2X'];
-const colors = [
-  { name: 'Gray', color: '#d9d9d9' },
-  { name: 'Mint', color: '#a6d6ca' },
-  { name: 'Dark Gray', color: 'darkgrey' },
-  { name: 'Black', color: '#1e1e1e' },
-  { name: 'White', color: 'white' },
-  { name: 'Lavender', color: '#b9c1e8' },
-];
-
 const thumbnails = [imgRectangle4, imgRectangle5, imgRectangle6, imgRectangle7, imgRectangle8];
 
 interface Product {
@@ -38,7 +28,6 @@ interface ProductDetailProps {
   productId: string;
   onBack: () => void;
   onNavigateToHome: () => void;
-  onAddToCart: (item: Omit<CartItem, 'id'>) => void;
   onNavigateToBag: () => void;
   cartItemCount: number;
 }
@@ -87,7 +76,7 @@ function Header({ onBack, onNavigateToHome, onNavigateToBag, cartItemCount }: {
   );
 }
 
-export default function ProductDetail({ productId, onBack, onNavigateToHome, onAddToCart, onNavigateToBag, cartItemCount }: ProductDetailProps) {
+export default function ProductDetail({ productId, onBack, onNavigateToHome, onNavigateToBag, cartItemCount }: ProductDetailProps) {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<number | null>(null);
   const [selectedThumbnail, setSelectedThumbnail] = useState(0);

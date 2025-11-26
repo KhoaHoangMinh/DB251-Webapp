@@ -72,7 +72,7 @@ export default function OrderTable({ orders }: OrderTableProps) {
 
     setLoadingOrders({ ...loadingOrders, [orderID]: true });
     try {
-      const response = await fetch(`http://localhost:8000/orders/details/${orderID}`);
+      const response = await fetch(`http://localhost:8000/orders/${orderID}`);
       const data = await response.json();
       setOrderDetails({ ...orderDetails, [orderID]: data });
     } catch (error) {
