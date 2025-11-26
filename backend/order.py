@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from models import Product
 from database import db_dependency, get_db
 from models import Orders, OrderItem, Cart, CartItem
+from cart import remove_from_cart, ItemQuery
 
 router = APIRouter(prefix='/orders', tags=["Orders"])
 
@@ -176,6 +177,8 @@ def create_order_items(cartID: str, orderID: str, db: db_dependency):
     items = db.query(CartItem).filter(CartItem.cartID == cartID).all()
     for item in items:
         create_order_item(OrderItemCreate(orderID=orderID, productID=item.productID, quantity=item.quantity, unitPrice=item.unitPrice), db)
+        db.delete(item)
+    db.commit()
     return
 
 def create_order_helper(new_order: OrderCreate, db: db_dependency):
