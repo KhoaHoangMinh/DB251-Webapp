@@ -37,17 +37,16 @@ function Header({ onBackToManagement, onNavigateToHome, onNavigateToBag}: {
           </div>
 
           <div className="flex items-center gap-3">
-            <Button onClick={onBackToManagement} variant="outline">
-              <Home className="w-4 h-4 mr-2" />
-              Back to Management
-            </Button>
-
             <button
               onClick={onNavigateToBag}
               className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <ShoppingBag className="w-6 h-6" />
+              <ShoppingBag className="w-6 h-6"/>
             </button>
+            <Button onClick={onBackToManagement} variant="outline">
+              <Home className="w-4 h-4 mr-2"/>
+              Back to Management
+            </Button>
           </div>
         </div>
       </div>
