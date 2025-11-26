@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Trash2 } from 'lucide-react';
 import { Button } from './ui/button';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
 import imgImage1 from './static/swoosh.png';
 
 interface CartItem {
@@ -44,9 +45,11 @@ function Header({ onBack, onNavigateToHome }: { onBack: () => void; onNavigateTo
   );
 }
 
-export default function Bag({customerID, onBack, onNavigateToHome, onUpdateQuantity }: BagProps) {
+export default function Bag({ customerID, onBack, onNavigateToHome }: BagProps) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isOrderDialogOpen, setIsOrderDialogOpen] = useState(false);
+  const [orderSummary, setOrderSummary] = useState({ totalQuantity: 0, totalAmount: 0 });
 
   const fetchCart = async () => {
     try {
@@ -64,12 +67,35 @@ export default function Bag({customerID, onBack, onNavigateToHome, onUpdateQuant
     fetchCart();
   }, [customerID]);
 
-  const handleItemRemoved = () => {
-    fetchCart(); // Re-fetch the cart after an item is removed
+  const handleMakeOrder = () => {
+    const totalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
+    const totalAmount = cart.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
+    setOrderSummary({ totalQuantity, totalAmount });
+    setIsOrderDialogOpen(true);
+  };
+
+  const confirmOrder = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/orders/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerID: 'CUS0001',
+          storeID: 'STO0001',
+          orderStatus: 'Pending',
+        // Hard coded
+        }),
+      });
+      setIsOrderDialogOpen(false);
+      fetchCart();
+    } catch (error) {
+      console.error('Error creating order:', error);
+      alert('Failed to create order. Please try again.');
+    }
   };
 
   const subtotal = cart.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
-  const shipping = 15.00;
+  const shipping = 15.0;
   const total = subtotal + shipping;
 
   if (loading) {
@@ -89,11 +115,7 @@ export default function Bag({customerID, onBack, onNavigateToHome, onUpdateQuant
             <div className="col-span-2 space-y-4">
               <h2 className="text-gray-900 mb-4">Bag</h2>
               {cart.map((item) => (
-                <CartItemCard
-                  key={item.productID}
-                  item={item}
-                  onItemRemoved={handleItemRemoved}
-                />
+                <CartItemCard key={item.productID} item={item} onItemRemoved={fetchCart} />
               ))}
             </div>
 
@@ -103,11 +125,41 @@ export default function Bag({customerID, onBack, onNavigateToHome, onUpdateQuant
                 subtotal={subtotal}
                 shipping={shipping}
                 total={total}
+                onMakeOrder={handleMakeOrder}
               />
             </div>
           </div>
         )}
       </main>
+
+      {/* Order Confirmation Dialog */}
+      <Dialog open={isOrderDialogOpen} onOpenChange={setIsOrderDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Order Summary</DialogTitle>
+          </DialogHeader>
+
+          {/* Row 1: Quantity */}
+          <div className="flex justify-between text-sm mb-4">
+            <span className="text-muted-foreground">Total Items</span>
+            <span>{orderSummary.totalQuantity}</span>
+          </div>
+
+          {/* Subtotal Row */}
+          <div className="flex justify-between text-sm mb-6">
+            <span className="text-muted-foreground">Subtotal</span>
+            <span>${orderSummary.totalAmount.toFixed(2)}</span>
+          </div>
+
+          {/* Button Container */}
+          <div className="flex flex-col gap-2"> {/* Added flex-col to stack buttons vertically */}
+            <Button variant="outline" onClick={() => setIsOrderDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={confirmOrder}>Confirm Order</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -245,11 +297,13 @@ function EmptyCart({ onBack }: { onBack: () => void }) {
 function OrderSummary({ 
   subtotal, 
   shipping, 
-  total 
+  total, 
+  onMakeOrder 
 }: { 
   subtotal: number; 
   shipping: number; 
   total: number; 
+  onMakeOrder: () => void;
 }) {
   return (
     <div className="bg-white rounded-lg shadow-sm border p-6 sticky top-8">
@@ -276,11 +330,8 @@ function OrderSummary({
       </div>
 
       <div className="space-y-3">
-        <Button className="w-full" size="lg">
-          Member Checkout
-        </Button>
-        <Button className="w-full" size="lg" variant="outline">
-          Guest Checkout
+        <Button className="w-full" size="lg" onClick={onMakeOrder}>
+          Make Order
         </Button>
       </div>
     </div>
