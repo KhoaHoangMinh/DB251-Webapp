@@ -4,7 +4,7 @@ GO
 -- Trigger 1: Auto-update Loyalty Points After Order Insert --
 CREATE TRIGGER AddLoyaltyPoints
 ON Orders
-AFTER INSERT
+AFTER INSERT, UPDATE
 AS
 BEGIN
     UPDATE c

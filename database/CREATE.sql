@@ -10,6 +10,7 @@ CREATE SEQUENCE Seq_EmployeeID START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE Seq_ProductID START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE Seq_OrderID START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE Seq_StoreID START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE Seq_CartID START WITH 1 INCREMENT BY 1;
 GO
 
 -- Customer Table
@@ -88,4 +89,21 @@ CREATE TABLE OrderItem (
     FOREIGN KEY (ProductID) REFERENCES Product(ProductID)
     --Consider adding FOREIGN KEY (OrderID) REFERENCES Orders(OrderID) ON DELETE CASCADE
     --So when an order is deleted, its items are deleted automatically.
+);
+
+CREATE TABLE Cart (
+    CartID VARCHAR(10) PRIMARY KEY DEFAULT ('CRT' + RIGHT('0000' + CAST(NEXT VALUE FOR Seq_CartID AS VARCHAR(4)), 4)),
+    CustomerID VARCHAR(10) NOT NULL,
+    FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID)
+);
+
+CREATE TABLE CartItem (
+    CartID VARCHAR(10),
+    ProductID VARCHAR(10),
+    Quantity INT NOT NULL CHECK (Quantity > 0),
+    UnitPrice DECIMAL(10,2) NOT NULL CHECK (UnitPrice >= 0),
+    LineTotal AS (Quantity * UnitPrice) PERSISTED,
+    PRIMARY KEY (CartID, ProductID),
+    FOREIGN KEY (ProductID) REFERENCES Product(ProductID),
+    FOREIGN KEY (CartID) REFERENCES Cart(CartID)
 );

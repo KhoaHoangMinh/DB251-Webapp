@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 from typing import Optional, Dict, List, Annotated
 from pydantic import BaseModel
+from sqlalchemy import text
 
 from database import db_dependency
 from models import Product
@@ -21,6 +22,11 @@ class ProductCreate(BaseModel):
 
 class SummaryStats(BaseModel):
     total_products: int
+
+class BestSellingProduct(BaseModel):
+    productID: str
+    productName: str
+    totalQuantitySold: int
 
 @router.get("/")
 def list_products(db: db_dependency):
@@ -100,3 +106,20 @@ def delete_product(product_id: str, db: db_dependency):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/get_top_selling_products/{top}")
+def get_top_selling_products(top: int, db: db_dependency):
+    try:
+        query = text("EXEC dbo.GetTopSellingProductsByQuantity @TopN=:top")
+        result = db.execute(query, {"top": top}).fetchall()
+
+        top_products = []
+        for row in result:
+            top_products.append(BestSellingProduct(
+                productID=row[0],
+                productName=row[1],
+                totalQuantitySold=row[2]
+            ))
+
+        return top_products
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
