@@ -44,39 +44,39 @@ function Header({ onBack, onNavigateToHome, onNavigateToBag, cartItemCount }: {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button onClick={onNavigateToHome} className="h-[53px] w-[88px] hover:opacity-80 transition-opacity">
-              <img alt="Nike Logo" className="w-full h-full object-cover" src={imgImage1} />
+              <img alt="Nike Logo" className="w-full h-full object-cover" src={imgImage1}/>
             </button>
             <div>
               <h1 className="text-gray-900">Product Details</h1>
               <p className="text-sm text-gray-600 mt-1">View and customize your selection</p>
             </div>
           </div>
-
           <div className="flex items-center gap-3">
-            <Button onClick={onBack} variant="outline">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Shop
-            </Button>
-
             <button
               onClick={onNavigateToBag}
               className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <ShoppingBag className="w-6 h-6" />
-              {cartItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-gray-900 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {cartItemCount}
-                </span>
-              )}
+              <ShoppingBag className="w-6 h-6"/>
             </button>
+            <Button onClick={onBack} variant="outline">
+              <ArrowLeft className="w-4 h-4 mr-2"/>
+              Back to Shop
+            </Button>
           </div>
+
         </div>
       </div>
     </header>
   );
 }
 
-export default function ProductDetail({ productId, onBack, onNavigateToHome, onNavigateToBag, cartItemCount }: ProductDetailProps) {
+export default function ProductDetail({
+                                        productId,
+                                        onBack,
+                                        onNavigateToHome,
+                                        onNavigateToBag,
+                                        cartItemCount
+                                      }: ProductDetailProps) {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<number | null>(null);
   const [selectedThumbnail, setSelectedThumbnail] = useState(0);
