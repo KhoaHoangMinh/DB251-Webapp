@@ -92,7 +92,6 @@ export default function Bag({customerID, onBack, onNavigateToHome, onUpdateQuant
                 <CartItemCard
                   key={item.productID}
                   item={item}
-                  onUpdateQuantity={(quantity) => onUpdateQuantity(item.productID, quantity)}
                   onItemRemoved={handleItemRemoved}
                 />
               ))}
@@ -115,11 +114,9 @@ export default function Bag({customerID, onBack, onNavigateToHome, onUpdateQuant
 
 function CartItemCard({ 
   item, 
-  onUpdateQuantity, 
   onItemRemoved 
 }: { 
   item: CartItem; 
-  onUpdateQuantity: (quantity: number) => void;
   onItemRemoved: () => void;
 }) {
   const [productName, setProductName] = useState<string | null>(null);
@@ -138,6 +135,30 @@ function CartItemCard({
 
     fetchProductName();
   }, [item.productID]);
+
+  const updateQuantity = async (newQuantity: number) => {
+    if (newQuantity <= 0) {
+      console.error('Quantity must be greater than 0');
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8000/cart/${newQuantity}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cartID: item.cartID, productID: item.productID }),
+      });
+
+      if (response.ok) {
+        onItemRemoved(); // Trigger re-fetch of the cart
+      } else {
+        const error = await response.json();
+        console.error('Failed to update quantity:', error.detail || 'Unknown error');
+      }
+    } catch (error) {
+      console.error('Error updating quantity:', error);
+    }
+  };
 
   const handleRemoveItem = async () => {
     try {
@@ -180,14 +201,14 @@ function CartItemCard({
               <span className="text-sm text-gray-600">Quantity:</span>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => onUpdateQuantity(Math.max(1, item.quantity - 1))}
+                  onClick={() => updateQuantity(item.quantity - 1)}
                   className="w-8 h-8 border border-gray-300 rounded flex items-center justify-center hover:bg-gray-50 transition-colors"
                 >
                   -
                 </button>
                 <span className="text-gray-900 w-8 text-center">{item.quantity}</span>
                 <button
-                  onClick={() => onUpdateQuantity(item.quantity + 1)}
+                  onClick={() => updateQuantity(item.quantity + 1)}
                   className="w-8 h-8 border border-gray-300 rounded flex items-center justify-center hover:bg-gray-50 transition-colors"
                 >
                   +
