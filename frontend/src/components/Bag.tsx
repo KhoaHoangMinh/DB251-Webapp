@@ -16,7 +16,6 @@ interface BagProps {
   customerID: string;
   onBack: () => void;
   onNavigateToHome: () => void;
-  onRemoveItem: (itemId: string) => void;
   onUpdateQuantity: (itemId: string, quantity: number) => void;
 }
 
@@ -45,14 +44,83 @@ function Header({ onBack, onNavigateToHome }: { onBack: () => void; onNavigateTo
   );
 }
 
+export default function Bag({customerID, onBack, onNavigateToHome, onUpdateQuantity }: BagProps) {
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchCart = async () => {
+    try {
+      const response = await fetch(`http://localhost:8000/cart/${customerID}`);
+      const data = await response.json();
+      setCart(data);
+    } catch (error) {
+      console.error('Error fetching cart items:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCart();
+  }, [customerID]);
+
+  const handleItemRemoved = () => {
+    fetchCart(); // Re-fetch the cart after an item is removed
+  };
+
+  const subtotal = cart.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+  const shipping = 15.00;
+  const total = subtotal + shipping;
+
+  if (loading) {
+    return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header onBack={onBack} onNavigateToHome={onNavigateToHome} />
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {cart.length === 0 ? (
+          <EmptyCart onBack={onBack} />
+        ) : (
+          <div className="grid grid-cols-3 gap-8">
+            {/* Cart Items */}
+            <div className="col-span-2 space-y-4">
+              <h2 className="text-gray-900 mb-4">Bag</h2>
+              {cart.map((item) => (
+                <CartItemCard
+                  key={item.productID}
+                  item={item}
+                  onUpdateQuantity={(quantity) => onUpdateQuantity(item.productID, quantity)}
+                  onItemRemoved={handleItemRemoved}
+                />
+              ))}
+            </div>
+
+            {/* Order Summary */}
+            <div className="col-span-1">
+              <OrderSummary
+                subtotal={subtotal}
+                shipping={shipping}
+                total={total}
+              />
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
+
 function CartItemCard({ 
   item, 
-  onRemove, 
-  onUpdateQuantity 
+  onUpdateQuantity, 
+  onItemRemoved 
 }: { 
   item: CartItem; 
-  onRemove: () => void;
   onUpdateQuantity: (quantity: number) => void;
+  onItemRemoved: () => void;
 }) {
   const [productName, setProductName] = useState<string | null>(null);
 
@@ -70,6 +138,24 @@ function CartItemCard({
 
     fetchProductName();
   }, [item.productID]);
+
+  const handleRemoveItem = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/cart/', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cartID: item.cartID, productID: item.productID }),
+      });
+
+      if (response.ok) {
+        onItemRemoved(); // Trigger re-fetch of the cart
+      } else {
+        console.error('Failed to remove item from cart');
+      }
+    } catch (error) {
+      console.error('Error removing item from cart:', error);
+    }
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-sm border p-6">
@@ -110,7 +196,7 @@ function CartItemCard({
             </div>
 
             <button
-              onClick={onRemove}
+              onClick={handleRemoveItem}
               className="flex items-center gap-2 text-sm text-red-600 hover:text-red-700 transition-colors"
             >
               <Trash2 className="w-4 h-4" />
@@ -180,67 +266,3 @@ function OrderSummary({
   );
 }
 
-export default function Bag({ customerID, onBack, onNavigateToHome, onRemoveItem, onUpdateQuantity }: BagProps) {
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchCart = async () => {
-      try {
-        const response = await fetch(`http://localhost:8000/cart/${customerID}`);
-        const data = await response.json();
-        setCart(data);
-      } catch (error) {
-        console.error('Error fetching cart items:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCart();
-  }, [customerID]);
-
-  const subtotal = cart.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
-  const shipping = 15.00;
-  const total = subtotal + shipping;
-
-  if (loading) {
-    return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Header onBack={onBack} onNavigateToHome={onNavigateToHome} />
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {cart.length === 0 ? (
-          <EmptyCart onBack={onBack} />
-        ) : (
-          <div className="grid grid-cols-3 gap-8">
-            {/* Cart Items */}
-            <div className="col-span-2 space-y-4">
-              <h2 className="text-gray-900 mb-4">Bag</h2>
-              {cart.map((item) => (
-                <CartItemCard
-                  key={item.productID}
-                  item={item}
-                  onRemove={() => onRemoveItem(item.productID)}
-                  onUpdateQuantity={(quantity) => onUpdateQuantity(item.productID, quantity)}
-                />
-              ))}
-            </div>
-
-            {/* Order Summary */}
-            <div className="col-span-1">
-              <OrderSummary 
-                subtotal={subtotal}
-                shipping={shipping}
-                total={total}
-              />
-            </div>
-          </div>
-        )}
-      </main>
-    </div>
-  );
-}

@@ -121,10 +121,6 @@ export default function App() {
     setCart([...cart, newItem]);
   };
 
-  const handleRemoveFromCart = (itemId: string) => {
-    setCart(cart.filter(item => item.id !== itemId));
-  };
-
   const handleUpdateQuantity = (itemId: string, quantity: number) => {
     setCart(cart.map(item =>
       item.id === itemId ? { ...item, quantity } : item
@@ -189,7 +185,6 @@ export default function App() {
           customerID="CUS0001"
           onBack={handleBackToShop}
           onNavigateToHome={handleNavigateToHome}
-          onRemoveItem={handleRemoveFromCart}
           onUpdateQuantity={handleUpdateQuantity}
         />
       </>
