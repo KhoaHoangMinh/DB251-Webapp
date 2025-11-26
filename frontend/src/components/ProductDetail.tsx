@@ -108,22 +108,29 @@ export default function ProductDetail({ productId, onBack, onNavigateToHome, onA
     getProductData();
   }, []);
 
-  const handleAddToCart = () => {
-    if (selectedSize && selectedColor !== null) {
-      onAddToCart({
-        productID: productData.productID,
-        productName: productData.productName,
-        productDescription: productData.productDescription,
-        price: productData.price,
-        category: productData.category || 'SHIRTS',
-        image: productData.image || thumbnails[0],
-        size: selectedSize,
-        color: colors[selectedColor].name,
-        quantity,
+  const handleAddToCart = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/cart/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cartID: 'CRT0001',
+          // Hard coded cart id
+          productID: productData.productID,
+          quantity,
+          unitPrice: productData.price,
+        }),
       });
-      toast.success('Added to cart!');
-    } else {
-      toast.error('Please select size and color');
+
+      if (response.ok) {
+        toast.success('Added to cart!');
+      } else {
+        const error = await response.json();
+        toast.error(`Failed to add to cart: ${error.detail || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      toast.error('Failed to add to cart. Please try again.');
     }
   };
 
