@@ -167,7 +167,7 @@ class OrderItem(Base):
     productID = Column(String(10), ForeignKey("Product.productID", ondelete="CASCADE"), primary_key=True)
     quantity = Column(Integer, nullable=False)
     unitPrice = Column(DECIMAL(10, 2), nullable=False)
-    lineTotal = Column(DECIMAL(10, 2))
+    lineTotal = Column(DECIMAL(10, 2), FetchedValue())
 
     __table_args__ = (
         CheckConstraint("Quantity > 0", name="checkQuantity"),
