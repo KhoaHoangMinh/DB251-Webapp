@@ -200,19 +200,12 @@ def create_order_helper(new_order: OrderCreate, db: db_dependency):
 
 @router.post('/', status_code=status.HTTP_201_CREATED)
 def create_order(new_order: OrderCreate, db: db_dependency):
-    created_order = create_order_helper(new_order, db)
     cartID = db.query(Cart).filter(Cart.customerID == new_order.customerID).first().cartID
+    if not db.query(CartItem).filter(CartItem.cartID == cartID).all():
+        raise HTTPException(status_code=400, detail='Cart is empty')
+    created_order = create_order_helper(new_order, db)
     create_order_items(cartID, created_order.orderID, db)
     return {"message" : "success"}
-
-@router.post("/bulk", status_code = status.HTTP_201_CREATED)
-def create_orders(orders: List[OrderCreate], db: db_dependency):
-    #TODO: insert successfully but the return values is missing
-    created = []
-    for order in orders:
-        new_order = create_order(order, db)
-        created.append(new_order)
-    return created
 
 @router.delete("/{id}")
 def delete_order(id: str, db: db_dependency):
