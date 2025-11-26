@@ -107,6 +107,3 @@ CREATE TABLE CartItem (
     FOREIGN KEY (ProductID) REFERENCES Product(ProductID),
     FOREIGN KEY (CartID) REFERENCES Cart(CartID)
 );
-
-Drop TABLE Cart
-DROP TABLE CartItem
