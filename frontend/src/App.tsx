@@ -186,6 +186,7 @@ export default function App() {
         <Toaster position="top-right" />
         <Bag
           cart={cart}
+          customerID="CUS0001"
           onBack={handleBackToShop}
           onNavigateToHome={handleNavigateToHome}
           onRemoveItem={handleRemoveFromCart}

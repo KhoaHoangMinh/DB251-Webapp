@@ -25,6 +25,11 @@ def get_cart_list(db: db_dependency):
 def get_item_list(db: db_dependency):
     return db.query(CartItem).all()
 
+@router.get('/{id}')
+def get_customer_cart(id: str, db: db_dependency):
+    cartID = db.query(Cart).filter(Cart.customerID == id).first().cartID
+    return db.query(CartItem).filter(CartItem.cartID == cartID).all()
+
 @router.post('/')
 def add_to_cart(item: CartItemCreate, db: db_dependency):
     db_item = CartItem(**item.model_dump())

@@ -1,11 +1,19 @@
+import { useState, useEffect } from 'react';
 import { ArrowLeft, Trash2 } from 'lucide-react';
 import { Button } from './ui/button';
-import { CartItem } from '../App';
-// import imgImage1 from 'figma:asset/a6e9b49adeaf7f41c4d30833bcdbc09e8bf03b4a.png';
 import imgImage1 from './static/swoosh.png';
 
+interface CartItem {
+  cartID: string;
+  productID: string;
+  quantity: number;
+  unitPrice: number;
+  productName: string;
+  productDescription: string;
+}
+
 interface BagProps {
-  cart: CartItem[];
+  customerID: string;
   onBack: () => void;
   onNavigateToHome: () => void;
   onRemoveItem: (itemId: string) => void;
@@ -49,27 +57,15 @@ function CartItemCard({
   return (
     <div className="bg-white rounded-lg shadow-sm border p-6">
       <div className="flex gap-6">
-        {/* Product Image */}
-        <div className="w-48 h-48 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden">
-          <img 
-            alt={item.productName} 
-            className="w-full h-full object-cover" 
-            src={item.image} 
-          />
-        </div>
-
         {/* Product Details */}
         <div className="flex-1 flex flex-col">
           <div className="flex justify-between">
             <div>
               <h3 className="text-gray-900 mb-1">{item.productName}</h3>
               <p className="text-sm text-gray-600 mb-2">{item.productDescription}</p>
-              <p className="text-sm text-gray-600 mb-1">Category: {item.category}</p>
-              <p className="text-sm text-gray-600 mb-1">Color: {item.color}</p>
-              <p className="text-sm text-gray-600">Size: {item.size}</p>
             </div>
             <div className="text-right">
-              <p className="text-gray-900">${item.price}</p>
+              <p className="text-gray-900">${item.unitPrice.toFixed(2)}</p>
             </div>
           </div>
 
@@ -165,10 +161,33 @@ function OrderSummary({
   );
 }
 
-export default function Bag({ cart, onBack, onNavigateToHome, onRemoveItem, onUpdateQuantity }: BagProps) {
-  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+export default function Bag({ customerID, onBack, onNavigateToHome, onRemoveItem, onUpdateQuantity }: BagProps) {
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCart = async () => {
+      try {
+        const response = await fetch(`http://localhost:8000/cart/${customerID}`);
+        const data = await response.json();
+        setCart(data);
+      } catch (error) {
+        console.error('Error fetching cart items:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCart();
+  }, [customerID]);
+
+  const subtotal = cart.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
   const shipping = 15.00;
   const total = subtotal + shipping;
+
+  if (loading) {
+    return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -184,10 +203,10 @@ export default function Bag({ cart, onBack, onNavigateToHome, onRemoveItem, onUp
               <h2 className="text-gray-900 mb-4">Bag</h2>
               {cart.map((item) => (
                 <CartItemCard
-                  key={item.id}
+                  key={item.productID}
                   item={item}
-                  onRemove={() => onRemoveItem(item.id)}
-                  onUpdateQuantity={(quantity) => onUpdateQuantity(item.id, quantity)}
+                  onRemove={() => onRemoveItem(item.productID)}
+                  onUpdateQuantity={(quantity) => onUpdateQuantity(item.productID, quantity)}
                 />
               ))}
             </div>
