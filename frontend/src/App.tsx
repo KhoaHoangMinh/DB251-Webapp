@@ -113,14 +113,6 @@ export default function App() {
     setCurrentView('bag');
   };
 
-  const handleAddToCart = (item: Omit<CartItem, 'id'>) => {
-    const newItem: CartItem = {
-      ...item,
-      id: `${item.productID}-${item.size}-${item.color}-${Date.now()}`,
-    };
-    setCart([...cart, newItem]);
-  };
-
   const handleUpdateQuantity = (itemId: string, quantity: number) => {
     setCart(cart.map(item =>
       item.id === itemId ? { ...item, quantity } : item
@@ -139,7 +131,6 @@ export default function App() {
           onNavigateToShop={handleNavigateToShop}
           onBackToManagement={handleBackToManagement}
           onNavigateToBag={handleNavigateToBag}
-          cartItemCount={cart.length}
         />
       </>
     );
@@ -154,7 +145,6 @@ export default function App() {
           onBackToManagement={handleBackToManagement}
           onNavigateToHome={handleNavigateToHome}
           onNavigateToBag={handleNavigateToBag}
-          cartItemCount={cart.length}
         />
       </>
     );
@@ -168,9 +158,7 @@ export default function App() {
           productId={selectedProductId}
           onBack={handleBackToShop}
           onNavigateToHome={handleNavigateToHome}
-          onAddToCart={handleAddToCart}
           onNavigateToBag={handleNavigateToBag}
-          cartItemCount={cart.length}
         />
       </>
     );
