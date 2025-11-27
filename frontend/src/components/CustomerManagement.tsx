@@ -16,12 +16,18 @@ interface Customer {
   isActive: boolean;
 }
 
+interface SummaryStats {
+  total_Customers: number;
+  avg_age: number;
+}
+
 export default function CustomerManagement() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [topCustomer, setTopCustomer] = useState<Customer>();
+  const [summaryStats, setSummaryStats] = useState<SummaryStats>();
 
   const fetchCustomers = async () => {
     try {
@@ -32,6 +38,7 @@ export default function CustomerManagement() {
       console.error('Error fetching customers:', error);
     }
     fetchTopCustomer();
+    fetchSummaryStats();
   };
 
   const fetchTopCustomer = async () => {
@@ -41,6 +48,16 @@ export default function CustomerManagement() {
       if (data.length > 0) {
         setTopCustomer(data[0]); // Assuming the API returns an array with the top customer
       }
+    } catch (error) {
+      console.error('Error fetching the top customer:', error);
+    }
+  };
+
+  const fetchSummaryStats = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/customers/stats');
+      const data = await response.json();
+      setSummaryStats(data);
     } catch (error) {
       console.error('Error fetching the top customer:', error);
     }
@@ -63,6 +80,7 @@ export default function CustomerManagement() {
       searchCustomers(searchTerm);
     }
     fetchTopCustomer();
+    fetchSummaryStats();
   }, [searchTerm]);
 
   const handleAddCustomer = () => {
@@ -149,17 +167,31 @@ export default function CustomerManagement() {
         {/* Display Top Customer */}
         {topCustomer && (
           <div className="mb-6 p-4 bg-white rounded-lg shadow">
-            <h3 className="text-lg font-semibold text-gray-900">Top Customer</h3>
-            <p className="text-sm text-gray-600 mt-1">
-              <strong>Name:</strong> {topCustomer.customerName}
-            </p>
-            <p className="text-sm text-gray-600">
-              <strong>Total Spent:</strong> ${topCustomer.totalSpent.toFixed(2)}
-            </p>
+            <div className="grid grid-cols-2 gap-4 py-1">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Customer Summary stats</h3>
+                <p className="text-sm text-gray-600">
+                  <strong>Total Customers:</strong> {summaryStats.total_Customers}
+                </p>
+                <p className="text-sm text-gray-600">
+                  <strong>Average Age:</strong> ${summaryStats.avg_age.toFixed(2)}
+                </p>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Top Customer</h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  <strong>Name:</strong> {topCustomer.customerName}
+                </p>
+                <p className="text-sm text-gray-600">
+                  <strong>Total Spent:</strong> ${topCustomer.totalSpent.toFixed(2)}
+                </p>
+              </div>
+            </div>
+
           </div>
         )}
 
-        <CustomerTable customers={customers} onEdit={handleEditCustomer} onDelete={handleDeleteCustomer} />
+        <CustomerTable customers={customers} onEdit={handleEditCustomer} onDelete={handleDeleteCustomer}/>
       </div>
       <CustomerDialog
         customer={selectedCustomer}
