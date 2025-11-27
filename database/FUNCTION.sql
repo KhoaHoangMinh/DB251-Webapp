@@ -17,7 +17,7 @@ BEGIN
     FROM Orders o
     CROSS APPLY dbo.GetOrderSummary(o.OrderID) gs
     WHERE o.CustomerID = @CustomerID
-      AND o.OrderStatus IN ('Confirmed', 'Delivered', 'Shipped');
+      AND o.OrderStatus IN ('Pending', 'Confirmed', 'Processing', 'Shipped', 'Delivered');
 
     RETURN @TotalSpending;
 END;

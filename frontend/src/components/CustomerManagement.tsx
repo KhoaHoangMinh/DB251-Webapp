@@ -21,6 +21,7 @@ export default function CustomerManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [topCustomer, setTopCustomer] = useState<Customer>();
 
   const fetchCustomers = async () => {
     try {
@@ -29,6 +30,19 @@ export default function CustomerManagement() {
       setCustomers(data);
     } catch (error) {
       console.error('Error fetching customers:', error);
+    }
+    fetchTopCustomer();
+  };
+
+  const fetchTopCustomer = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/customers/top_customers/1');
+      const data = await response.json();
+      if (data.length > 0) {
+        setTopCustomer(data[0]); // Assuming the API returns an array with the top customer
+      }
+    } catch (error) {
+      console.error('Error fetching the top customer:', error);
     }
   };
 
@@ -48,6 +62,7 @@ export default function CustomerManagement() {
     } else {
       searchCustomers(searchTerm);
     }
+    fetchTopCustomer();
   }, [searchTerm]);
 
   const handleAddCustomer = () => {
@@ -130,7 +145,22 @@ export default function CustomerManagement() {
           />
         </div>
       </div>
-      <CustomerTable customers={customers} onEdit={handleEditCustomer} onDelete={handleDeleteCustomer} />
+      <div>
+        {/* Display Top Customer */}
+        {topCustomer && (
+          <div className="mb-6 p-4 bg-white rounded-lg shadow">
+            <h3 className="text-lg font-semibold text-gray-900">Top Customer</h3>
+            <p className="text-sm text-gray-600 mt-1">
+              <strong>Name:</strong> {topCustomer.customerName}
+            </p>
+            <p className="text-sm text-gray-600">
+              <strong>Total Spent:</strong> ${topCustomer.totalSpent.toFixed(2)}
+            </p>
+          </div>
+        )}
+
+        <CustomerTable customers={customers} onEdit={handleEditCustomer} onDelete={handleDeleteCustomer} />
+      </div>
       <CustomerDialog
         customer={selectedCustomer}
         open={isDialogOpen}
