@@ -25,7 +25,7 @@ class SummaryStats(BaseModel):
 class CustomerUpdate(BaseModel):
     customerName: Optional[str] = None
     dateOfBirth: Optional[str] = None
-    phone: Optional[int] = None
+    phone: Optional[str] = None
     isActive: Optional[bool] = None
     loyaltyPoints: Optional[int] = None
 
