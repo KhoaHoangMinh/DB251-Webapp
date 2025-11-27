@@ -4,6 +4,7 @@ import { Input } from './ui/input';
 import { Plus, Search, RefreshCcw} from 'lucide-react';
 import EmployeeTable from './EmployeeTable';
 import EmployeeDialog from './EmployeeDialog';
+import { API_BASE_URL } from '../config/api';
 
 interface Employee {
   employeeID: string;
@@ -31,7 +32,7 @@ export default function EmployeeManagement() {
 
   const fetchEmployees = async () => {
     try {
-      const response = await fetch('http://localhost:8000/employees'); // Adjust URL if needed
+      const response = await fetch(`${API_BASE_URL}/employees`);
       const data = await response.json();
       setEmployees(data);
     } catch (error) {
@@ -42,7 +43,7 @@ export default function EmployeeManagement() {
 
   const fetchSummaryStats = async () => {
     try {
-      const response = await fetch('http://localhost:8000/employees/stats'); // Adjust URL if needed
+      const response = await fetch(`${API_BASE_URL}/employees/stats`);
       const data = await response.json();
       setSummaryStats(data);
     } catch (error) {
@@ -52,7 +53,7 @@ export default function EmployeeManagement() {
 
   const searchEmployees = async (term: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/employees/search?search=${encodeURIComponent(term)}`); // Adjust URL if needed
+      const response = await fetch(`${API_BASE_URL}/employees/search?search=${encodeURIComponent(term)}`);
       const data = await response.json();
       setEmployees(data);
     } catch (error) {
@@ -81,20 +82,18 @@ export default function EmployeeManagement() {
 
   const handleDeleteEmployee = async (id: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/employees/${id}`, {
-        method: 'DELETE'
-      });
+      await fetch(`${API_BASE_URL}/employees/${id}`, { method: 'DELETE' });
+      fetchEmployees();
     } catch (error) {
       console.error('Error deleting employee:', error);
     }
-    fetchEmployees();
   };
 
   const handleSaveEmployee = async (employee: Employee) => {
     if (selectedEmployee) {
       // Update existing employee
       try {
-        const response = await fetch(`http://localhost:8000/employees/${employee.employeeID}`, {
+        const response = await fetch(`${API_BASE_URL}/employees/${employee.employeeID}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -114,7 +113,7 @@ export default function EmployeeManagement() {
     } else {
       // Add new employee
       try {
-        const response = await fetch('http://localhost:8000/employees', {
+        const response = await fetch(`${API_BASE_URL}/employees`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

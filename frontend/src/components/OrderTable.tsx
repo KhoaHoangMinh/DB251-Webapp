@@ -3,6 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Badge } from './ui/badge';
 import { ChevronDown, ChevronRight, ArrowUpDown } from 'lucide-react';
 import { Button } from './ui/button';
+import { API_BASE_URL } from '../config/api';
 
 interface Order {
   orderID: string;
@@ -77,9 +78,7 @@ export default function OrderTable({ orders }: OrderTableProps) {
 
     setLoadingOrders({ ...loadingOrders, [orderID]: true });
     try {
-      // const response = await fetch(`http://localhost:8000/orders/${orderID}`);
-      const response = await fetch(`http://localhost:8000/orders/details/${orderID}`);
-      // NOTE: modify to use the procedure GetOrderProductDetails
+      const response = await fetch(`${API_BASE_URL}/orders/details/${orderID}`);
       const data = await response.json();
       setOrderDetails({ ...orderDetails, [orderID]: data });
     } catch (error) {
@@ -91,11 +90,11 @@ export default function OrderTable({ orders }: OrderTableProps) {
 
   const fetchEstDeliveryDate = async (orderID: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/orders/calculate_estimated_delivery/${orderID}`);
+      const response = await fetch(`${API_BASE_URL}/orders/calculate_estimated_delivery/${orderID}`);
       const data = await response.json();
       setEstDeliveryDate(data);
     } catch (error) {
-      console.error('Error fetching the top customer:', error);
+      console.error('Error fetching estimated delivery date:', error);
     }
   };
 

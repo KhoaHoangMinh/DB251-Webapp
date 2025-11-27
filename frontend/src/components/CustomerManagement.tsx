@@ -4,7 +4,7 @@ import { Input } from './ui/input';
 import { Plus, RefreshCcw, Search } from 'lucide-react';
 import CustomerTable from './CustomerTable';
 import CustomerDialog from './CustomerDialog';
-import {API_BASE_URL} from '../config/api'
+import { API_BASE_URL } from '../config/api';
 
 interface Customer {
   customerID: string;
@@ -44,7 +44,7 @@ export default function CustomerManagement() {
 
   const fetchTopCustomer = async () => {
     try {
-      const response = await fetch('${API_BASE_URL}/customers/top_customers/1');
+      const response = await fetch(`${API_BASE_URL}/customers/top_customers/1`);
       const data = await response.json();
       if (data.length > 0) {
         setTopCustomer(data[0]); // Assuming the API returns an array with the top customer
@@ -56,11 +56,11 @@ export default function CustomerManagement() {
 
   const fetchSummaryStats = async () => {
     try {
-      const response = await fetch('${API_BASE_URL}/customers/stats');
+      const response = await fetch(`${API_BASE_URL}/customers/stats`);
       const data = await response.json();
       setSummaryStats(data);
     } catch (error) {
-      console.error('Error fetching the top customer:', error);
+      console.error('Error fetching summary stats:', error);
     }
   };
 
