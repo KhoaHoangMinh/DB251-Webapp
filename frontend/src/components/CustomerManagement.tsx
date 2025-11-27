@@ -4,6 +4,7 @@ import { Input } from './ui/input';
 import { Plus, RefreshCcw, Search } from 'lucide-react';
 import CustomerTable from './CustomerTable';
 import CustomerDialog from './CustomerDialog';
+import {API_BASE_URL} from '../config/api'
 
 interface Customer {
   customerID: string;
@@ -31,7 +32,7 @@ export default function CustomerManagement() {
 
   const fetchCustomers = async () => {
     try {
-      const response = await fetch('http://localhost:8000/customers');
+      const response = await fetch(`${API_BASE_URL}/customers`);
       const data = await response.json();
       setCustomers(data);
     } catch (error) {
@@ -43,7 +44,7 @@ export default function CustomerManagement() {
 
   const fetchTopCustomer = async () => {
     try {
-      const response = await fetch('http://localhost:8000/customers/top_customers/1');
+      const response = await fetch('${API_BASE_URL}/customers/top_customers/1');
       const data = await response.json();
       if (data.length > 0) {
         setTopCustomer(data[0]); // Assuming the API returns an array with the top customer
@@ -55,7 +56,7 @@ export default function CustomerManagement() {
 
   const fetchSummaryStats = async () => {
     try {
-      const response = await fetch('http://localhost:8000/customers/stats');
+      const response = await fetch('${API_BASE_URL}/customers/stats');
       const data = await response.json();
       setSummaryStats(data);
     } catch (error) {
@@ -65,7 +66,7 @@ export default function CustomerManagement() {
 
   const searchCustomers = async (term: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/customers/search?search=${encodeURIComponent(term)}`);
+      const response = await fetch(`${API_BASE_URL}/customers/search?search=${encodeURIComponent(term)}`);
       const data = await response.json();
       setCustomers(data);
     } catch (error) {
@@ -95,7 +96,7 @@ export default function CustomerManagement() {
 
   const handleDeleteCustomer = async (id: string) => {
     try {
-      await fetch(`http://localhost:8000/customers/${id}`, { method: 'DELETE' });
+      await fetch(`${API_BASE_URL}/customers/${id}`, { method: 'DELETE' });
       fetchCustomers();
     } catch (error) {
       console.error('Error deleting customer:', error);
@@ -106,7 +107,7 @@ export default function CustomerManagement() {
     if (selectedCustomer) {
       // Update existing customer
       try {
-        const response = await fetch(`http://localhost:8000/customers/${customer.customerID}`, {
+        const response = await fetch(`${API_BASE_URL}/customers/${customer.customerID}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(customer),
@@ -119,7 +120,7 @@ export default function CustomerManagement() {
     } else {
       // Add new customer
       try {
-        const response = await fetch('http://localhost:8000/customers', {
+        const response = await fetch(`${API_BASE_URL}/customers`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(customer),

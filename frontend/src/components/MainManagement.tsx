@@ -79,9 +79,9 @@ export default function MainManagement({ currentUser, onLogout, onNavigateToShop
           <TabsContent value="orders">
             <OrderManagement />
           </TabsContent>
-          <TabsContent value="stores">
-            <ProductManagement />
-          </TabsContent>
+          {/*<TabsContent value="stores">*/}
+          {/*  <ProductManagement />*/}
+          {/*</TabsContent>*/}
 
         </Tabs>
       </main>

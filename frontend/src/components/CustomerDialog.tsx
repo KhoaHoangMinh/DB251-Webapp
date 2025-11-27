@@ -10,16 +10,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from './ui/dialog';
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "./ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 interface Customer {
-  customerName: string;
   age: number;
-  dateOfBirth: string;
+  customerName: string;
   email: string;
-  phone: string;
-  loyaltyPoints: number;
+  dateOfBirth: string;
+  phone: number;
   isActive: boolean;
+  loyaltyPoints: number;
 }
 
 interface CustomerDialogProps {
@@ -31,11 +31,13 @@ interface CustomerDialogProps {
 
 export default function CustomerDialog({ customer, open, onOpenChange, onSave }: CustomerDialogProps) {
   const [formData, setFormData] = useState<Partial<Customer>>({
+    age: 0,
     customerName: '',
+    email: '',
     dateOfBirth: '',
-    phone: '',
-    loyaltyPoints: 0,
+    phone: 0,
     isActive: true,
+    loyaltyPoints: 0,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -45,11 +47,13 @@ export default function CustomerDialog({ customer, open, onOpenChange, onSave }:
       setFormData(customer);
     } else {
       setFormData({
+        age: 0,
         customerName: '',
+        email: '',
         dateOfBirth: '',
-        phone: '',
-        loyaltyPoints: 0,
+        phone: 0,
         isActive: true,
+        loyaltyPoints: 0,
       });
     }
     setErrors({});
@@ -69,8 +73,10 @@ export default function CustomerDialog({ customer, open, onOpenChange, onSave }:
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.customerName) newErrors.customerName = 'Customer name is required.';
+    if (!formData.age || formData.age <= 0) newErrors.age = 'Age must be greater than 0.';
+    if (!formData.email) newErrors.email = 'Email is required.';
     if (!formData.dateOfBirth) newErrors.dateOfBirth = 'Date of birth is required.';
-    if (!formData.phone) newErrors.phone = 'Phone number is required.';
+    if (!formData.phone || formData.phone <= 0) newErrors.phone = 'Phone number is required.';
     return newErrors;
   };
 
@@ -95,6 +101,7 @@ export default function CustomerDialog({ customer, open, onOpenChange, onSave }:
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-2 gap-4 py-4">
+            {/* Customer Name */}
             <div className="col-span-2">
               <Label htmlFor="customerName">Customer Name</Label>
               <Input
@@ -105,6 +112,34 @@ export default function CustomerDialog({ customer, open, onOpenChange, onSave }:
               />
               {errors.customerName && <p className="text-red-500 text-sm">{errors.customerName}</p>}
             </div>
+
+            {/* Age */}
+            <div>
+              <Label htmlFor="age">Age</Label>
+              <Input
+                id="age"
+                type="number"
+                value={formData.age}
+                onChange={(e) => handleChange('age', parseInt(e.target.value))}
+                placeholder="30"
+              />
+              {errors.age && <p className="text-red-500 text-sm">{errors.age}</p>}
+            </div>
+
+            {/* Email */}
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleChange('email', e.target.value)}
+                placeholder="example@example.com"
+              />
+              {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+            </div>
+
+            {/* Date of Birth */}
             <div>
               <Label htmlFor="dateOfBirth">Date of Birth</Label>
               <Input
@@ -115,16 +150,21 @@ export default function CustomerDialog({ customer, open, onOpenChange, onSave }:
               />
               {errors.dateOfBirth && <p className="text-red-500 text-sm">{errors.dateOfBirth}</p>}
             </div>
-            <div className="col-span-2">
+
+            {/* Phone */}
+            <div>
               <Label htmlFor="phone">Phone</Label>
               <Input
                 id="phone"
+                type="number"
                 value={formData.phone}
-                onChange={(e) => handleChange('phone', e.target.value)}
-                placeholder="555-1234"
+                onChange={(e) => handleChange('phone', parseInt(e.target.value))}
+                placeholder="1234567890"
               />
               {errors.phone && <p className="text-red-500 text-sm">{errors.phone}</p>}
             </div>
+
+            {/* Loyalty Points */}
             <div>
               <Label htmlFor="loyaltyPoints">Loyalty Points</Label>
               <Input
@@ -135,6 +175,7 @@ export default function CustomerDialog({ customer, open, onOpenChange, onSave }:
                 placeholder="0"
               />
             </div>
+
             {/* Is Active */}
             <div className="col-span-2">
               <Label htmlFor="isActive">Active Status</Label>
