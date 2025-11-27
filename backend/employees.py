@@ -94,7 +94,7 @@ def update_employee(id: str, employee : EmployeeUpdate, db : db_dependency):
             db_employee.department = employee.department
         if employee.salary and db_employee.salary != employee.salary:
             db_employee.salary = employee.salary
-        if employee.isActive != None:
+        if employee.isActive is not None:
             db_employee.isActive = employee.isActive
         db.commit()
         db.refresh(db_employee)

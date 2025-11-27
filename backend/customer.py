@@ -106,7 +106,7 @@ def update_customer(id: str, customer : CustomerUpdate, db : db_dependency):
         db_customer.dateOfBirth = customer.dateOfBirth
     if customer.phone and db_customer.phone != customer.phone:
         db_customer.phone = customer.phone
-    if customer.isActive and db_customer.isActive != customer.isActive:
+    if customer.isActive is not None:
         db_customer.isActive = customer.isActive
     if customer.loyaltyPoints and db_customer.loyaltyPoints != customer.loyaltyPoints:
         db_customer.loyaltyPoints = customer.loyaltyPoints
