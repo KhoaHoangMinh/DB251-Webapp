@@ -1,18 +1,20 @@
 import {useEffect, useState} from 'react';
 import svgPaths from '../imports/svg-2ijf4c8ns8';
-import imgRectangle3 from './static/swoosh.png';
-import imgRectangle4 from './static/swoosh.png';
-import imgRectangle5 from './static/swoosh.png';
-import imgRectangle6 from './static/swoosh.png';
-import imgRectangle7 from './static/swoosh.png';
-import imgRectangle8 from './static/swoosh.png';
-import imgImage1 from './static/swoosh.png';
+
+import swoosh from './static/swoosh.png';
+import thumbnail1 from './static/pic1.jpg';
+import thumbnail2 from './static/pic2.png';
+import thumbnail3 from './static/pic3.jpg';
+import thumbnail4 from './static/pic4.png';
+import thumbnail5 from './static/pic5.jpg';
+import thumbnail6 from './static/pic6.jpg';
+
 import { Search, Heart, ShoppingBag, ArrowLeft } from 'lucide-react';
 import { Button } from './ui/button';
 import { CartItem } from '../App';
 import { toast } from 'sonner@2.0.3';
 
-const thumbnails = [imgRectangle4, imgRectangle5, imgRectangle6, imgRectangle7, imgRectangle8];
+const thumbnails = [thumbnail1, thumbnail2, thumbnail3, thumbnail4, thumbnail5, thumbnail6];
 
 interface Product {
   productID: string;
@@ -44,7 +46,7 @@ function Header({ onBack, onNavigateToHome, onNavigateToBag, cartItemCount }: {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button onClick={onNavigateToHome} className="h-[53px] w-[88px] hover:opacity-80 transition-opacity">
-              <img alt="Nike Logo" className="w-full h-full object-cover" src={imgImage1}/>
+              <img alt="Nike Logo" className="w-full h-full object-cover" src={swoosh}/>
             </button>
             <div>
               <h1 className="text-gray-900">Product Details</h1>
