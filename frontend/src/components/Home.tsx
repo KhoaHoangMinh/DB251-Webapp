@@ -101,7 +101,7 @@ export default function Home({ onNavigateToShop, onBackToManagement, onNavigateT
             </Button>
             <Button
               variant="outline"
-              className="border-white text-white hover:bg-white hover:text-gray-900 px-8 py-6 text-lg rounded-full"
+              className="border-white text-white text-gray-900 px-8 py-6 text-lg rounded-full"
             >
               Learn More
             </Button>
@@ -110,51 +110,51 @@ export default function Home({ onNavigateToShop, onBackToManagement, onNavigateT
       </section>
 
       {/* Footer */}
-      <footer className="bg-black text-white py-12">
+      <footer className="bg-white text-black py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-4 gap-8 mb-8">
             <div>
               <h3 className="mb-4">Get Help</h3>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li className="hover:text-white cursor-pointer">Order Status</li>
-                <li className="hover:text-white cursor-pointer">Delivery</li>
-                <li className="hover:text-white cursor-pointer">Returns</li>
-                <li className="hover:text-white cursor-pointer">Contact Us</li>
+              <ul className="space-y-2 text-sm text-black-400">
+                <li className="hover:text-gray cursor-pointer">Order Status</li>
+                <li className="hover:text-gray cursor-pointer">Delivery</li>
+                <li className="hover:text-gray cursor-pointer">Returns</li>
+                <li className="hover:text-gray cursor-pointer">Contact Us</li>
               </ul>
             </div>
             <div>
               <h3 className="mb-4">About Nike</h3>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li className="hover:text-white cursor-pointer">News</li>
-                <li className="hover:text-white cursor-pointer">Careers</li>
-                <li className="hover:text-white cursor-pointer">Investors</li>
-                <li className="hover:text-white cursor-pointer">Sustainability</li>
+              <ul className="space-y-2 text-sm text-black-400">
+                <li className="hover:text-gray cursor-pointer">News</li>
+                <li className="hover:text-gray cursor-pointer">Careers</li>
+                <li className="hover:text-gray cursor-pointer">Investors</li>
+                <li className="hover:text-gray cursor-pointer">Sustainability</li>
               </ul>
             </div>
             <div>
               <h3 className="mb-4">Shop</h3>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li className="hover:text-white cursor-pointer">All Products</li>
-                <li className="hover:text-white cursor-pointer">New Releases</li>
-                <li className="hover:text-white cursor-pointer">Sale</li>
-                <li className="hover:text-white cursor-pointer">Gift Cards</li>
+              <ul className="space-y-2 text-sm text-black-400">
+                <li className="hover:text-gray cursor-pointer">All Products</li>
+                <li className="hover:text-gray cursor-pointer">New Releases</li>
+                <li className="hover:text-gray cursor-pointer">Sale</li>
+                <li className="hover:text-gray cursor-pointer">Gift Cards</li>
               </ul>
             </div>
             <div>
               <h3 className="mb-4">Follow Us</h3>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li className="hover:text-white cursor-pointer">Instagram</li>
-                <li className="hover:text-white cursor-pointer">Twitter</li>
-                <li className="hover:text-white cursor-pointer">Facebook</li>
-                <li className="hover:text-white cursor-pointer">YouTube</li>
+              <ul className="space-y-2 text-sm text-black-400">
+                <li className="hover:text-gray cursor-pointer">Instagram</li>
+                <li className="hover:text-gray cursor-pointer">Twitter</li>
+                <li className="hover:text-gray cursor-pointer">Facebook</li>
+                <li className="hover:text-gray cursor-pointer">YouTube</li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-gray-800 pt-8 flex justify-between text-sm text-gray-400">
+          <div className="border-t border-black-800 pt-8 flex justify-between text-sm text-black-400">
             <p>© 2025 Nike, Inc. All Rights Reserved</p>
             <div className="flex gap-6">
-              <span className="hover:text-white cursor-pointer">Privacy Policy</span>
-              <span className="hover:text-white cursor-pointer">Terms of Use</span>
+              <span className="hover:text-gray cursor-pointer">Privacy Policy</span>
+              <span className="hover:text-gray cursor-pointer">Terms of Use</span>
             </div>
           </div>
         </div>
