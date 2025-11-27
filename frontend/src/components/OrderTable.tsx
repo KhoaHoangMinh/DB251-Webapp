@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import {useEffect, useState} from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Badge } from './ui/badge';
 import { ChevronDown, ChevronRight, ArrowUpDown } from 'lucide-react';
@@ -32,6 +32,10 @@ interface OrderTableProps {
   orders: Order[];
 }
 
+interface EstDeliveryDate {
+  date: string;
+}
+
 type SortField = 'orderID' | 'dateOrder' | 'customerID' | 'storeID' | 'orderStatus';
 type SortOrder = 'asc' | 'desc';
 
@@ -41,6 +45,7 @@ export default function OrderTable({ orders }: OrderTableProps) {
   const [loadingOrders, setLoadingOrders] = useState<Record<string, boolean>>({});
   const [sortField, setSortField] = useState<SortField>('orderID');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+  const [estDeliveryDate, setEstDeliveryDate] = useState<EstDeliveryDate>();
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -84,13 +89,24 @@ export default function OrderTable({ orders }: OrderTableProps) {
     }
   };
 
+  const fetchEstDeliveryDate = async (orderID: string) => {
+    try {
+      const response = await fetch(`http://localhost:8000/orders/calculate_estimated_delivery/${orderID}`);
+      const data = await response.json();
+      setEstDeliveryDate(data);
+    } catch (error) {
+      console.error('Error fetching the top customer:', error);
+    }
+  };
+
   const toggleExpand = async (orderID: string) => {
     const isExpanded = expandedOrders[orderID];
-    
+
     if (!isExpanded) {
       await fetchOrderDetails(orderID);
+      await fetchEstDeliveryDate(orderID); // Fetch estimated delivery date when expanding the order
     }
-    
+
     setExpandedOrders({
       ...expandedOrders,
       [orderID]: !isExpanded,
@@ -121,7 +137,6 @@ export default function OrderTable({ orders }: OrderTableProps) {
       <ArrowUpDown className="w-4 h-4" />
     </button>
   );
-
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
       <div className="overflow-x-auto">
@@ -204,8 +219,15 @@ export default function OrderTable({ orders }: OrderTableProps) {
                                   <p className="text-sm text-gray-600">Store Name</p>
                                   <p className="text-gray-900">{orderDetails[order.orderID].storeName}</p>
                                 </div>
+                                <div>
+                                  <p className="text-sm text-gray-600">Estimated Delivery Date</p>
+                                  <p className="text-gray-900">
+                                    {/*{estDeliveryDate?.date || 'N/A'}*/}
+                                    {new Date(estDeliveryDate).toLocaleDateString() || 'N/A'}
+                                  </p>
+                                </div>
                               </div>
-                              
+
                               <h4 className="text-gray-900 mb-3">Order Items</h4>
                               <div className="border rounded-lg overflow-hidden">
                                 <Table>
@@ -238,7 +260,6 @@ export default function OrderTable({ orders }: OrderTableProps) {
                                             .toFixed(2)}
                                         </strong>
                                       </TableCell>
-                                      <TableCell></TableCell>
                                     </TableRow>
                                   </TableBody>
                                 </Table>
