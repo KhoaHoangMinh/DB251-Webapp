@@ -3,6 +3,23 @@ import imgImage1 from './static/swoosh.png';
 import { Search, ShoppingBag, Home } from 'lucide-react';
 import { Button } from './ui/button';
 
+import thumbnail1 from './static/pic1.jpg';
+import thumbnail2 from './static/pic2.png';
+import thumbnail3 from './static/pic3.jpg';
+import thumbnail4 from './static/pic4.png';
+import thumbnail5 from './static/pic5.jpg';
+import thumbnail6 from './static/pic6.jpg';
+
+// Global count variable
+let count = 0;
+
+function getThumbnail(): string {
+  const thumbnails = [thumbnail1, thumbnail2, thumbnail3, thumbnail4, thumbnail5, thumbnail6];
+  const thumbnail = thumbnails[count % thumbnails.length];
+  count++;
+  return thumbnail;
+}
+
 interface Product {
   productID: string;
   productName: string;
@@ -93,7 +110,7 @@ function ProductCard({ product, onClick }: { product: Product; onClick: () => vo
       className="bg-white rounded-lg shadow-sm border overflow-hidden cursor-pointer hover:shadow-md transition-all group"
     >
       <div className="w-full aspect-[4/5] bg-gray-200 overflow-hidden flex items-center justify-center">
-        <span className="text-gray-400 text-sm">No Image</span>
+        <img alt="Thumbnail" className="w-full h-full object-cover" src={getThumbnail()} />
       </div>
       <div className="p-4">
         <p className="text-sm text-gray-600 mb-1">{product.productDescription}</p>
