@@ -13,11 +13,12 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 interface Customer {
+  customerID: string;
   age: number;
   customerName: string;
   email: string;
   dateOfBirth: string;
-  phone: number;
+  phone: string;
   isActive: boolean;
   loyaltyPoints: number;
 }
@@ -31,6 +32,7 @@ interface CustomerDialogProps {
 
 export default function CustomerDialog({ customer, open, onOpenChange, onSave }: CustomerDialogProps) {
   const [formData, setFormData] = useState<Partial<Customer>>({
+    customerID: '',
     age: 0,
     customerName: '',
     email: '',
@@ -47,6 +49,7 @@ export default function CustomerDialog({ customer, open, onOpenChange, onSave }:
       setFormData(customer);
     } else {
       setFormData({
+        customerID: '',
         age: 0,
         customerName: '',
         email: '',
@@ -158,7 +161,7 @@ export default function CustomerDialog({ customer, open, onOpenChange, onSave }:
                 id="phone"
                 type="number"
                 value={formData.phone}
-                onChange={(e) => handleChange('phone', parseInt(e.target.value))}
+                onChange={(e) => handleChange('phone', e.target.value)}
                 placeholder="1234567890"
               />
               {errors.phone && <p className="text-red-500 text-sm">{errors.phone}</p>}
