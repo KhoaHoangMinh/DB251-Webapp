@@ -13,6 +13,7 @@ class ProductUpdate(BaseModel):
     productDescription: Optional[str] = None
     price: Optional[float] = None
     stock: Optional[int] = None
+    isActive: Optional[bool] = None
 
 class ProductCreate(BaseModel):
     productName: str
@@ -84,6 +85,8 @@ def update_product(product_id: str, product_update: ProductUpdate, db: db_depend
         product.price = product_update.price
     if product_update.stock and product.stockQuantity != product_update.stock:
         product.stockQuantity = product_update.stock
+    if product_update.isActive is not None:
+        product.isActive = product_update.isActive
     db.commit()
     db.refresh(product)
     return product

@@ -38,7 +38,7 @@ BEGIN
         SELECT 1
         FROM Orders
         WHERE OrderID = @OrderID
-          AND OrderStatus = 'Delivered'
+--           AND OrderStatus = 'Delivered'
     )
     BEGIN
         PRINT 'Order not delivered yet. Stock not updated.';

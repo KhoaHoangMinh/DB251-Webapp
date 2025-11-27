@@ -23,9 +23,11 @@ class SummaryStats(BaseModel):
     avg_age: float
 
 class CustomerUpdate(BaseModel):
+    age: Optional[int] = None
     customerName: Optional[str] = None
+    email: Optional[str] = None
     dateOfBirth: Optional[str] = None
-    phone: Optional[int] = None
+    phone: Optional[str] = None
     isActive: Optional[bool] = None
     loyaltyPoints: Optional[int] = None
 
@@ -96,23 +98,32 @@ def create_customers(customers: List[CustomersCreate], db : db_dependency):
     return created
 
 @router.put("/{id}")
-def update_customer(id: str, customer : CustomerUpdate, db : db_dependency):
+def update_customer(id: str, customer: CustomerUpdate, db: db_dependency):
     db_customer = db.query(Customer).filter(Customer.customerID == id).first()
     if not db_customer:
         raise HTTPException(status_code=404, detail="Customer not found")
-    if customer.customerName and db_customer.customerName != customer.customerName:
-        db_customer.customerName = customer.customerName
-    if customer.dateOfBirth and db_customer.dateOfBirth != customer.dateOfBirth:
-        db_customer.dateOfBirth = customer.dateOfBirth
-    if customer.phone and db_customer.phone != customer.phone:
-        db_customer.phone = customer.phone
-    if customer.isActive and db_customer.isActive != customer.isActive:
-        db_customer.isActive = customer.isActive
-    if customer.loyaltyPoints and db_customer.loyaltyPoints != customer.loyaltyPoints:
-        db_customer.loyaltyPoints = customer.loyaltyPoints
-    db.commit()
-    db.refresh(db_customer)
-    return db_customer
+    
+    try:
+        if customer.age is not None and db_customer.age != customer.age:
+            db_customer.age = customer.age
+        if customer.customerName and db_customer.customerName != customer.customerName:
+            db_customer.customerName = customer.customerName
+        if customer.email and db_customer.email != customer.email:
+            db_customer.email = customer.email
+        if customer.dateOfBirth and db_customer.dateOfBirth != customer.dateOfBirth:
+            db_customer.dateOfBirth = customer.dateOfBirth
+        if customer.phone and db_customer.phone != customer.phone:
+            db_customer.phone = customer.phone
+        if customer.isActive is not None:
+            db_customer.isActive = customer.isActive
+        if customer.loyaltyPoints is not None and db_customer.loyaltyPoints != customer.loyaltyPoints:
+            db_customer.loyaltyPoints = customer.loyaltyPoints
+
+        db.commit()
+        db.refresh(db_customer)
+        return db_customer
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.delete("/bulk", status_code=status.HTTP_200_OK)
 def delete_bulk(indexes : List[str] = Body(...), db : Session = Depends(get_db)):

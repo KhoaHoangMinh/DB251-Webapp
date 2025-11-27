@@ -205,6 +205,7 @@ def create_order(new_order: OrderCreate, db: db_dependency):
         raise HTTPException(status_code=400, detail='Cart is empty')
     created_order = create_order_helper(new_order, db)
     create_order_items(cartID, created_order.orderID, db)
+    update_stock_after_order(created_order.orderID, db)
     return {"message" : "success"}
 
 @router.delete("/{id}")

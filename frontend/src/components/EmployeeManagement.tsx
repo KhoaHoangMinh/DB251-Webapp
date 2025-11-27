@@ -4,6 +4,7 @@ import { Input } from './ui/input';
 import { Plus, Search, RefreshCcw} from 'lucide-react';
 import EmployeeTable from './EmployeeTable';
 import EmployeeDialog from './EmployeeDialog';
+import { API_BASE_URL } from '../config/api';
 
 interface Employee {
   employeeID: string;
@@ -15,25 +16,44 @@ interface Employee {
   salary: number; // Matches Salary in SQL
 }
 
+interface SummaryStats {
+  total_employees: number;
+  total_positions: number;
+  total_departments: number;
+  avg_salary: number;
+}
+
 export default function EmployeeManagement() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [summaryStats, setSummaryStats] = useState<SummaryStats>();
 
   const fetchEmployees = async () => {
     try {
-      const response = await fetch('http://localhost:8000/employees'); // Adjust URL if needed
+      const response = await fetch(`${API_BASE_URL}/employees`);
       const data = await response.json();
       setEmployees(data);
     } catch (error) {
       console.error('Error fetching employees:', error);
     }
+    fetchSummaryStats();
+  };
+
+  const fetchSummaryStats = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/employees/stats`);
+      const data = await response.json();
+      setSummaryStats(data);
+    } catch (error) {
+      console.error('Error fetching summary stats:', error);
+    }
   };
 
   const searchEmployees = async (term: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/employees/search?search=${encodeURIComponent(term)}`); // Adjust URL if needed
+      const response = await fetch(`${API_BASE_URL}/employees/search?search=${encodeURIComponent(term)}`);
       const data = await response.json();
       setEmployees(data);
     } catch (error) {
@@ -47,6 +67,7 @@ export default function EmployeeManagement() {
     } else {
       searchEmployees(searchTerm);
     }
+    fetchSummaryStats();
   }, [searchTerm]);
 
   const handleAddEmployee = () => {
@@ -61,20 +82,18 @@ export default function EmployeeManagement() {
 
   const handleDeleteEmployee = async (id: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/employees/${id}`, {
-        method: 'DELETE'
-      });
+      await fetch(`${API_BASE_URL}/employees/${id}`, { method: 'DELETE' });
+      fetchEmployees();
     } catch (error) {
       console.error('Error deleting employee:', error);
     }
-    fetchEmployees();
   };
 
   const handleSaveEmployee = async (employee: Employee) => {
     if (selectedEmployee) {
       // Update existing employee
       try {
-        const response = await fetch(`http://localhost:8000/employees/${employee.employeeID}`, {
+        const response = await fetch(`${API_BASE_URL}/employees/${employee.employeeID}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -94,7 +113,7 @@ export default function EmployeeManagement() {
     } else {
       // Add new employee
       try {
-        const response = await fetch('http://localhost:8000/employees', {
+        const response = await fetch(`${API_BASE_URL}/employees`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -137,11 +156,11 @@ export default function EmployeeManagement() {
           </div>
           <div className="flex gap-4">
             <Button onClick={handleAddEmployee}>
-              <Plus className="w-4 h-4 mr-2" />
+              <Plus className="w-4 h-4 mr-2"/>
               Add Employee
             </Button>
             <Button onClick={fetchEmployees}>
-              <RefreshCcw className="w-4 h-4 mr-2" />
+              <RefreshCcw className="w-4 h-4 mr-2"/>
               Refresh
             </Button>
           </div>
@@ -149,7 +168,7 @@ export default function EmployeeManagement() {
 
         {/* Search Bar */}
         <div className="mt-6 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"/>
           <Input
             type="text"
             placeholder="Search by ID, name, department, or position..."
@@ -159,13 +178,29 @@ export default function EmployeeManagement() {
           />
         </div>
       </div>
+      <div>
+        {/* Display Top Customer */}
+        {summaryStats && (
+          <div className="mb-6 p-4 bg-white rounded-lg shadow">
+            <h3 className="text-lg font-semibold text-gray-900">Employee summary stats</h3>
+            <p className="text-sm text-gray-600 mt-1">
+              <strong>Total employees:</strong> {summaryStats.total_employees}
+            </p>
+            <p className="text-sm text-gray-600">
+              <strong>Total positions:</strong> {summaryStats.total_positions}
+            </p>
+            <p className="text-sm text-gray-600">
+              <strong>Total departments:</strong> {summaryStats.total_departments}
+            </p>
+            <p className="text-sm text-gray-600">
+              <strong>Average salary:</strong> ${summaryStats.avg_salary.toFixed(2)}
+            </p>
+          </div>
+        )}
+        {/* Employee Table */}
+        <EmployeeTable employees={employees} onEdit={handleEditEmployee} onDelete={handleDeleteEmployee}/>
+      </div>
 
-      {/* Employee Table */}
-      <EmployeeTable
-        employees={employees}
-        onEdit={handleEditEmployee}
-        onDelete={handleDeleteEmployee}
-      />
 
       {/* Employee Dialog */}
       <EmployeeDialog
