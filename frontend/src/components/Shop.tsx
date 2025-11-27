@@ -3,6 +3,23 @@ import imgImage1 from './static/swoosh.png';
 import { Search, ShoppingBag, Home } from 'lucide-react';
 import { Button } from './ui/button';
 
+import thumbnail1 from './static/pic1.jpg';
+import thumbnail2 from './static/pic2.png';
+import thumbnail3 from './static/pic3.jpg';
+import thumbnail4 from './static/pic4.png';
+import thumbnail5 from './static/pic5.jpg';
+import thumbnail6 from './static/pic6.jpg';
+
+// Global count variable
+let count = 0;
+
+function getThumbnail(): string {
+  const thumbnails = [thumbnail1, thumbnail2, thumbnail3, thumbnail4, thumbnail5, thumbnail6];
+  const thumbnail = thumbnails[count % thumbnails.length];
+  count++;
+  return thumbnail;
+}
+
 interface Product {
   productID: string;
   productName: string;
@@ -13,79 +30,17 @@ interface Product {
   createdDate: string;
 }
 
-// Commented database remains intact
-const productsDatabase: Product[] = [
-  {
-    productID: 'P001',
-    productName: 'BASIC SLIM FIT SHIRT',
-    productDescription: 'Cotton T-Shirt',
-    price: 199,
-    stockQuantity: 50,
-    isActive: true,
-    createdDate: '2025-01-01',
-  },
-  {
-    productID: 'P002',
-    productName: 'BASIC SLIM FIT SHIRT',
-    productDescription: 'Cotton T-Shirt',
-    price: 199,
-    stockQuantity: 45,
-    isActive: true,
-    createdDate: '2025-01-02',
-  },
-  {
-    productID: 'P003',
-    productName: 'BASIC SLIM FIT SHIRT',
-    productDescription: 'Cotton T-Shirt',
-    price: 199,
-    stockQuantity: 60,
-    isActive: true,
-    createdDate: '2025-01-03',
-  },
-  {
-    productID: 'P004',
-    productName: 'BASIC SLIM FIT SHIRT',
-    productDescription: 'Cotton T-Shirt',
-    price: 199,
-    stockQuantity: 40,
-    isActive: true,
-    createdDate: '2025-01-04',
-  },
-  {
-    productID: 'P005',
-    productName: 'BASIC SLIM FIT SHIRT',
-    productDescription: 'Cotton T-Shirt',
-    price: 199,
-    stockQuantity: 55,
-    isActive: true,
-    createdDate: '2025-01-05',
-  },
-  {
-    productID: 'P006',
-    productName: 'BASIC SLIM FIT SHIRT',
-    productDescription: 'Cotton T-Shirt',
-    price: 199,
-    stockQuantity: 35,
-    isActive: true,
-    createdDate: '2025-01-06',
-  },
-];
-
-const sizes = ['XS', 'S', 'L', 'ML', 'XL', '2X'];
-
 interface ShopProps {
   onProductClick: (productId: string) => void;
   onBackToManagement: () => void;
   onNavigateToHome: () => void;
   onNavigateToBag: () => void;
-  cartItemCount: number;
 }
 
-function Header({ onBackToManagement, onNavigateToHome, onNavigateToBag, cartItemCount }: {
+function Header({ onBackToManagement, onNavigateToHome, onNavigateToBag}: {
   onBackToManagement: () => void;
   onNavigateToHome: () => void;
   onNavigateToBag: () => void;
-  cartItemCount: number;
 }) {
   return (
     <header className="bg-white shadow-sm border-b sticky top-0 z-50">
@@ -99,22 +54,16 @@ function Header({ onBackToManagement, onNavigateToHome, onNavigateToBag, cartIte
           </div>
 
           <div className="flex items-center gap-3">
-            <Button onClick={onBackToManagement} variant="outline">
-              <Home className="w-4 h-4 mr-2" />
-              Back to Management
-            </Button>
-
             <button
               onClick={onNavigateToBag}
               className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <ShoppingBag className="w-6 h-6" />
-              {cartItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-gray-900 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {cartItemCount}
-                </span>
-              )}
+              <ShoppingBag className="w-6 h-6"/>
             </button>
+            <Button onClick={onBackToManagement} variant="outline">
+              <Home className="w-4 h-4 mr-2"/>
+              Back to Management
+            </Button>
           </div>
         </div>
       </div>
@@ -161,7 +110,7 @@ function ProductCard({ product, onClick }: { product: Product; onClick: () => vo
       className="bg-white rounded-lg shadow-sm border overflow-hidden cursor-pointer hover:shadow-md transition-all group"
     >
       <div className="w-full aspect-[4/5] bg-gray-200 overflow-hidden flex items-center justify-center">
-        <span className="text-gray-400 text-sm">No Image</span>
+        <img alt="Thumbnail" className="w-full h-full object-cover" src={getThumbnail()} />
       </div>
       <div className="p-4">
         <p className="text-sm text-gray-600 mb-1">{product.productDescription}</p>
@@ -172,7 +121,7 @@ function ProductCard({ product, onClick }: { product: Product; onClick: () => vo
   );
 }
 
-export default function Shop({ onProductClick, onBackToManagement, onNavigateToHome, onNavigateToBag, cartItemCount }: ShopProps) {
+export default function Shop({ onProductClick, onBackToManagement, onNavigateToHome, onNavigateToBag}: ShopProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [searchTerm, setsearchTerm] = useState('');
   const fetchProducts = async () => {
@@ -204,7 +153,7 @@ export default function Shop({ onProductClick, onBackToManagement, onNavigateToH
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header onBackToManagement={onBackToManagement} onNavigateToHome={onNavigateToHome} onNavigateToBag={onNavigateToBag} cartItemCount={cartItemCount} />
+      <Header onBackToManagement={onBackToManagement} onNavigateToHome={onNavigateToHome} onNavigateToBag={onNavigateToBag} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb */}
@@ -247,7 +196,7 @@ export default function Shop({ onProductClick, onBackToManagement, onNavigateToH
               </select>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="product-grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {products.map((product) => (
                 <ProductCard 
                   key={product.productID} 

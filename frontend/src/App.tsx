@@ -113,18 +113,6 @@ export default function App() {
     setCurrentView('bag');
   };
 
-  const handleAddToCart = (item: Omit<CartItem, 'id'>) => {
-    const newItem: CartItem = {
-      ...item,
-      id: `${item.productID}-${item.size}-${item.color}-${Date.now()}`,
-    };
-    setCart([...cart, newItem]);
-  };
-
-  const handleRemoveFromCart = (itemId: string) => {
-    setCart(cart.filter(item => item.id !== itemId));
-  };
-
   const handleUpdateQuantity = (itemId: string, quantity: number) => {
     setCart(cart.map(item =>
       item.id === itemId ? { ...item, quantity } : item
@@ -143,7 +131,6 @@ export default function App() {
           onNavigateToShop={handleNavigateToShop}
           onBackToManagement={handleBackToManagement}
           onNavigateToBag={handleNavigateToBag}
-          cartItemCount={cart.length}
         />
       </>
     );
@@ -158,7 +145,6 @@ export default function App() {
           onBackToManagement={handleBackToManagement}
           onNavigateToHome={handleNavigateToHome}
           onNavigateToBag={handleNavigateToBag}
-          cartItemCount={cart.length}
         />
       </>
     );
@@ -172,9 +158,7 @@ export default function App() {
           productId={selectedProductId}
           onBack={handleBackToShop}
           onNavigateToHome={handleNavigateToHome}
-          onAddToCart={handleAddToCart}
           onNavigateToBag={handleNavigateToBag}
-          cartItemCount={cart.length}
         />
       </>
     );
@@ -186,9 +170,9 @@ export default function App() {
         <Toaster position="top-right" />
         <Bag
           cart={cart}
+          customerID="CUS0001"
           onBack={handleBackToShop}
           onNavigateToHome={handleNavigateToHome}
-          onRemoveItem={handleRemoveFromCart}
           onUpdateQuantity={handleUpdateQuantity}
         />
       </>

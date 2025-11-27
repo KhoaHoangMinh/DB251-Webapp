@@ -1,28 +1,20 @@
 import {useEffect, useState} from 'react';
 import svgPaths from '../imports/svg-2ijf4c8ns8';
-import imgRectangle3 from './static/swoosh.png';
-import imgRectangle4 from './static/swoosh.png';
-import imgRectangle5 from './static/swoosh.png';
-import imgRectangle6 from './static/swoosh.png';
-import imgRectangle7 from './static/swoosh.png';
-import imgRectangle8 from './static/swoosh.png';
-import imgImage1 from './static/swoosh.png';
+
+import swoosh from './static/swoosh.png';
+import thumbnail1 from './static/pic1.jpg';
+import thumbnail2 from './static/pic2.png';
+import thumbnail3 from './static/pic3.jpg';
+import thumbnail4 from './static/pic4.png';
+import thumbnail5 from './static/pic5.jpg';
+import thumbnail6 from './static/pic6.jpg';
+
 import { Search, Heart, ShoppingBag, ArrowLeft } from 'lucide-react';
 import { Button } from './ui/button';
 import { CartItem } from '../App';
 import { toast } from 'sonner@2.0.3';
 
-const sizes = ['XS', 'S', 'L', 'ML', 'XL', '2X'];
-const colors = [
-  { name: 'Gray', color: '#d9d9d9' },
-  { name: 'Mint', color: '#a6d6ca' },
-  { name: 'Dark Gray', color: 'darkgrey' },
-  { name: 'Black', color: '#1e1e1e' },
-  { name: 'White', color: 'white' },
-  { name: 'Lavender', color: '#b9c1e8' },
-];
-
-const thumbnails = [imgRectangle4, imgRectangle5, imgRectangle6, imgRectangle7, imgRectangle8];
+const thumbnails = [thumbnail1, thumbnail2, thumbnail3, thumbnail4, thumbnail5, thumbnail6];
 
 interface Product {
   productID: string;
@@ -38,7 +30,6 @@ interface ProductDetailProps {
   productId: string;
   onBack: () => void;
   onNavigateToHome: () => void;
-  onAddToCart: (item: Omit<CartItem, 'id'>) => void;
   onNavigateToBag: () => void;
   cartItemCount: number;
 }
@@ -55,39 +46,39 @@ function Header({ onBack, onNavigateToHome, onNavigateToBag, cartItemCount }: {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button onClick={onNavigateToHome} className="h-[53px] w-[88px] hover:opacity-80 transition-opacity">
-              <img alt="Nike Logo" className="w-full h-full object-cover" src={imgImage1} />
+              <img alt="Nike Logo" className="w-full h-full object-cover" src={swoosh}/>
             </button>
             <div>
               <h1 className="text-gray-900">Product Details</h1>
               <p className="text-sm text-gray-600 mt-1">View and customize your selection</p>
             </div>
           </div>
-
           <div className="flex items-center gap-3">
-            <Button onClick={onBack} variant="outline">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Shop
-            </Button>
-
             <button
               onClick={onNavigateToBag}
               className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <ShoppingBag className="w-6 h-6" />
-              {cartItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-gray-900 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {cartItemCount}
-                </span>
-              )}
+              <ShoppingBag className="w-6 h-6"/>
             </button>
+            <Button onClick={onBack} variant="outline">
+              <ArrowLeft className="w-4 h-4 mr-2"/>
+              Back to Shop
+            </Button>
           </div>
+
         </div>
       </div>
     </header>
   );
 }
 
-export default function ProductDetail({ productId, onBack, onNavigateToHome, onAddToCart, onNavigateToBag, cartItemCount }: ProductDetailProps) {
+export default function ProductDetail({
+                                        productId,
+                                        onBack,
+                                        onNavigateToHome,
+                                        onNavigateToBag,
+                                        cartItemCount
+                                      }: ProductDetailProps) {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<number | null>(null);
   const [selectedThumbnail, setSelectedThumbnail] = useState(0);
@@ -108,22 +99,29 @@ export default function ProductDetail({ productId, onBack, onNavigateToHome, onA
     getProductData();
   }, []);
 
-  const handleAddToCart = () => {
-    if (selectedSize && selectedColor !== null) {
-      onAddToCart({
-        productID: productData.productID,
-        productName: productData.productName,
-        productDescription: productData.productDescription,
-        price: productData.price,
-        category: productData.category || 'SHIRTS',
-        image: productData.image || thumbnails[0],
-        size: selectedSize,
-        color: colors[selectedColor].name,
-        quantity,
+  const handleAddToCart = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/cart/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cartID: 'CRT0001',
+          // Hard coded cart id
+          productID: productData.productID,
+          quantity,
+          unitPrice: productData.price,
+        }),
       });
-      toast.success('Added to cart!');
-    } else {
-      toast.error('Please select size and color');
+
+      if (response.ok) {
+        toast.success('Added to cart!');
+      } else {
+        const error = await response.json();
+        toast.error(`Failed to add to cart: ${error.detail || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      toast.error('Failed to add to cart. Please try again.');
     }
   };
 

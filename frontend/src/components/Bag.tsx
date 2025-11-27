@@ -1,14 +1,22 @@
+import { useState, useEffect } from 'react';
 import { ArrowLeft, Trash2 } from 'lucide-react';
 import { Button } from './ui/button';
-import { CartItem } from '../App';
-// import imgImage1 from 'figma:asset/a6e9b49adeaf7f41c4d30833bcdbc09e8bf03b4a.png';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
 import imgImage1 from './static/swoosh.png';
 
+interface CartItem {
+  cartID: string;
+  productID: string;
+  quantity: number;
+  unitPrice: number;
+  productName: string;
+  productDescription: string;
+}
+
 interface BagProps {
-  cart: CartItem[];
+  customerID: string;
   onBack: () => void;
   onNavigateToHome: () => void;
-  onRemoveItem: (itemId: string) => void;
   onUpdateQuantity: (itemId: string, quantity: number) => void;
 }
 
@@ -37,39 +45,205 @@ function Header({ onBack, onNavigateToHome }: { onBack: () => void; onNavigateTo
   );
 }
 
+export default function Bag({ customerID, onBack, onNavigateToHome }: BagProps) {
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isOrderDialogOpen, setIsOrderDialogOpen] = useState(false);
+  const [orderSummary, setOrderSummary] = useState({ totalQuantity: 0, totalAmount: 0 });
+
+  const fetchCart = async () => {
+    try {
+      const response = await fetch(`http://localhost:8000/cart/${customerID}`);
+      const data = await response.json();
+      setCart(data);
+    } catch (error) {
+      console.error('Error fetching cart items:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCart();
+  }, [customerID]);
+
+  const handleMakeOrder = () => {
+    const totalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
+    const totalAmount = cart.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
+    setOrderSummary({ totalQuantity, totalAmount });
+    setIsOrderDialogOpen(true);
+  };
+
+  const confirmOrder = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/orders/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerID: 'CUS0001',
+          storeID: 'STO0001',
+          orderStatus: 'Pending',
+        // Hard coded
+        }),
+      });
+      setIsOrderDialogOpen(false);
+      fetchCart();
+    } catch (error) {
+      console.error('Error creating order:', error);
+      alert('Failed to create order. Please try again.');
+    }
+  };
+
+  const subtotal = cart.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+  const shipping = 15.0;
+  const total = subtotal + shipping;
+
+  if (loading) {
+    return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header onBack={onBack} onNavigateToHome={onNavigateToHome} />
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {cart.length === 0 ? (
+          <EmptyCart onBack={onBack} />
+        ) : (
+          <div className="grid grid-cols-3 gap-8">
+            {/* Cart Items */}
+            <div className="col-span-2 space-y-4">
+              <h2 className="text-gray-900 mb-4">Bag</h2>
+              {cart.map((item) => (
+                <CartItemCard key={item.productID} item={item} onItemRemoved={fetchCart} />
+              ))}
+            </div>
+
+            {/* Order Summary */}
+            <div className="col-span-1">
+              <OrderSummary
+                subtotal={subtotal}
+                shipping={shipping}
+                total={total}
+                onMakeOrder={handleMakeOrder}
+              />
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* Order Confirmation Dialog */}
+      <Dialog open={isOrderDialogOpen} onOpenChange={setIsOrderDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Order Summary</DialogTitle>
+          </DialogHeader>
+
+          {/* Row 1: Quantity */}
+          <div className="flex justify-between text-sm mb-4">
+            <span className="text-muted-foreground">Total Items</span>
+            <span>{orderSummary.totalQuantity}</span>
+          </div>
+
+          {/* Subtotal Row */}
+          <div className="flex justify-between text-sm mb-6">
+            <span className="text-muted-foreground">Subtotal</span>
+            <span>${orderSummary.totalAmount.toFixed(2)}</span>
+          </div>
+
+          {/* Button Container */}
+          <div className="flex flex-col gap-2"> {/* Added flex-col to stack buttons vertically */}
+            <Button variant="outline" onClick={() => setIsOrderDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={confirmOrder}>Confirm Order</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
 function CartItemCard({ 
   item, 
-  onRemove, 
-  onUpdateQuantity 
+  onItemRemoved 
 }: { 
   item: CartItem; 
-  onRemove: () => void;
-  onUpdateQuantity: (quantity: number) => void;
+  onItemRemoved: () => void;
 }) {
+  const [productName, setProductName] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProductName = async () => {
+      try {
+        const response = await fetch(`http://localhost:8000/products/${item.productID}`);
+        const product = await response.json();
+        setProductName(product.productName);
+      } catch (error) {
+        console.error('Error fetching product name:', error);
+        setProductName('Unknown Product');
+      }
+    };
+
+    fetchProductName();
+  }, [item.productID]);
+
+  const updateQuantity = async (newQuantity: number) => {
+    if (newQuantity <= 0) {
+      console.error('Quantity must be greater than 0');
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8000/cart/${newQuantity}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cartID: item.cartID, productID: item.productID }),
+      });
+
+      if (response.ok) {
+        onItemRemoved(); // Trigger re-fetch of the cart
+      } else {
+        const error = await response.json();
+        console.error('Failed to update quantity:', error.detail || 'Unknown error');
+      }
+    } catch (error) {
+      console.error('Error updating quantity:', error);
+    }
+  };
+
+  const handleRemoveItem = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/cart/', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cartID: item.cartID, productID: item.productID }),
+      });
+
+      if (response.ok) {
+        onItemRemoved(); // Trigger re-fetch of the cart
+      } else {
+        console.error('Failed to remove item from cart');
+      }
+    } catch (error) {
+      console.error('Error removing item from cart:', error);
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm border p-6">
       <div className="flex gap-6">
-        {/* Product Image */}
-        <div className="w-48 h-48 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden">
-          <img 
-            alt={item.productName} 
-            className="w-full h-full object-cover" 
-            src={item.image} 
-          />
-        </div>
-
         {/* Product Details */}
         <div className="flex-1 flex flex-col">
           <div className="flex justify-between">
             <div>
-              <h3 className="text-gray-900 mb-1">{item.productName}</h3>
+              <h3 className="text-gray-900 mb-1">{productName || 'Loading...'}</h3>
               <p className="text-sm text-gray-600 mb-2">{item.productDescription}</p>
-              <p className="text-sm text-gray-600 mb-1">Category: {item.category}</p>
-              <p className="text-sm text-gray-600 mb-1">Color: {item.color}</p>
-              <p className="text-sm text-gray-600">Size: {item.size}</p>
+              <p className="text-sm text-gray-600 mb-1">Product ID: {item.productID}</p>
+              <p className="text-sm text-gray-600 mb-1">Cart ID: {item.cartID}</p>
             </div>
             <div className="text-right">
-              <p className="text-gray-900">${item.price}</p>
+              <p className="text-gray-900">${item.unitPrice.toFixed(2)}</p>
             </div>
           </div>
 
@@ -79,14 +253,14 @@ function CartItemCard({
               <span className="text-sm text-gray-600">Quantity:</span>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => onUpdateQuantity(Math.max(1, item.quantity - 1))}
+                  onClick={() => updateQuantity(item.quantity - 1)}
                   className="w-8 h-8 border border-gray-300 rounded flex items-center justify-center hover:bg-gray-50 transition-colors"
                 >
                   -
                 </button>
                 <span className="text-gray-900 w-8 text-center">{item.quantity}</span>
                 <button
-                  onClick={() => onUpdateQuantity(item.quantity + 1)}
+                  onClick={() => updateQuantity(item.quantity + 1)}
                   className="w-8 h-8 border border-gray-300 rounded flex items-center justify-center hover:bg-gray-50 transition-colors"
                 >
                   +
@@ -95,7 +269,7 @@ function CartItemCard({
             </div>
 
             <button
-              onClick={onRemove}
+              onClick={handleRemoveItem}
               className="flex items-center gap-2 text-sm text-red-600 hover:text-red-700 transition-colors"
             >
               <Trash2 className="w-4 h-4" />
@@ -123,11 +297,13 @@ function EmptyCart({ onBack }: { onBack: () => void }) {
 function OrderSummary({ 
   subtotal, 
   shipping, 
-  total 
+  total, 
+  onMakeOrder 
 }: { 
   subtotal: number; 
   shipping: number; 
   total: number; 
+  onMakeOrder: () => void;
 }) {
   return (
     <div className="bg-white rounded-lg shadow-sm border p-6 sticky top-8">
@@ -154,55 +330,11 @@ function OrderSummary({
       </div>
 
       <div className="space-y-3">
-        <Button className="w-full" size="lg">
-          Member Checkout
-        </Button>
-        <Button className="w-full" size="lg" variant="outline">
-          Guest Checkout
+        <Button className="w-full" size="lg" onClick={onMakeOrder}>
+          Make Order
         </Button>
       </div>
     </div>
   );
 }
 
-export default function Bag({ cart, onBack, onNavigateToHome, onRemoveItem, onUpdateQuantity }: BagProps) {
-  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const shipping = 15.00;
-  const total = subtotal + shipping;
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Header onBack={onBack} onNavigateToHome={onNavigateToHome} />
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {cart.length === 0 ? (
-          <EmptyCart onBack={onBack} />
-        ) : (
-          <div className="grid grid-cols-3 gap-8">
-            {/* Cart Items */}
-            <div className="col-span-2 space-y-4">
-              <h2 className="text-gray-900 mb-4">Bag</h2>
-              {cart.map((item) => (
-                <CartItemCard
-                  key={item.id}
-                  item={item}
-                  onRemove={() => onRemoveItem(item.id)}
-                  onUpdateQuantity={(quantity) => onUpdateQuantity(item.id, quantity)}
-                />
-              ))}
-            </div>
-
-            {/* Order Summary */}
-            <div className="col-span-1">
-              <OrderSummary 
-                subtotal={subtotal}
-                shipping={shipping}
-                total={total}
-              />
-            </div>
-          </div>
-        )}
-      </main>
-    </div>
-  );
-}
