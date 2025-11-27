@@ -26,7 +26,7 @@ class EmployeeUpdate(BaseModel):
     department: Optional[str] = None
     position: Optional[str] = None
     salary: Optional[float] = None
-
+    isActive: Optional[bool] = None
 
 @router.get("/")
 def list_employees(db: db_dependency):
@@ -94,6 +94,8 @@ def update_employee(id: str, employee : EmployeeUpdate, db : db_dependency):
             db_employee.department = employee.department
         if employee.salary and db_employee.salary != employee.salary:
             db_employee.salary = employee.salary
+        if employee.isActive != None:
+            db_employee.isActive = employee.isActive
         db.commit()
         db.refresh(db_employee)
         return db_employee
