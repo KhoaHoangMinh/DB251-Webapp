@@ -72,7 +72,9 @@ export default function OrderTable({ orders }: OrderTableProps) {
 
     setLoadingOrders({ ...loadingOrders, [orderID]: true });
     try {
-      const response = await fetch(`http://localhost:8000/orders/${orderID}`);
+      // const response = await fetch(`http://localhost:8000/orders/${orderID}`);
+      const response = await fetch(`http://localhost:8000/orders/details/${orderID}`);
+      // NOTE: modify to use the procedure GetOrderProductDetails
       const data = await response.json();
       setOrderDetails({ ...orderDetails, [orderID]: data });
     } catch (error) {
