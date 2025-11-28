@@ -4,6 +4,7 @@ import { Input } from './ui/input';
 import {Plus, RefreshCcw, Search} from 'lucide-react';
 import ProductTable from './ProductTable';
 import ProductDialog from './ProductDialog';
+import { API_BASE_URL } from '../config/api';
 
 interface Product {
   productID: string;
@@ -23,8 +24,8 @@ export default function ProductManagement() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('http://localhost:8000/products');
-      const data = await  response.json();
+      const response = await fetch(`${API_BASE_URL}/products`);
+      const data = await response.json();
       setProducts(data);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -33,7 +34,7 @@ export default function ProductManagement() {
 
   const searchProducts = async (term: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/products/search?search=${encodeURIComponent(term)}`);
+      const response = await fetch(`${API_BASE_URL}/products/search?search=${encodeURIComponent(term)}`);
       const data = await response.json();
       setProducts(data);
     } catch (error) {
@@ -60,22 +61,20 @@ export default function ProductManagement() {
     setIsDialogOpen(true);
   };
 
-  const handleDeleteProduct = async (id: string) => {
+  const handleDeleteProduct = async (productID: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/products/${id}`, {
-        method: 'DELETE'
-      });
+      await fetch(`${API_BASE_URL}/products/${productID}`, { method: 'DELETE' });
+      fetchProducts();
     } catch (error) {
-      console.error('Error deleting employee:', error);
+      console.error('Error deleting product:', error);
     }
-    fetchProducts();
   };
 
   const handleSaveProduct = async (product: Product) => {
     if (selectedProduct) {
       // Update existing product
       try {
-        const response = await fetch(`http://localhost:8000/products/${product.productID}`, {
+        const response = await fetch(`${API_BASE_URL}/products/${product.productID}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -95,7 +94,7 @@ export default function ProductManagement() {
     } else {
       // Add new product
       try {
-        const response = await fetch('http://localhost:8000/products/create', {
+        const response = await fetch(`${API_BASE_URL}/products/create`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

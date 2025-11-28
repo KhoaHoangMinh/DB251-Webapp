@@ -3,6 +3,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { RefreshCcw, Search } from 'lucide-react';
 import OrderTable from './OrderTable';
+import { API_BASE_URL } from '../config/api';
 
 interface Order {
   orderID: string;
@@ -18,7 +19,7 @@ export default function OrderManagement() {
 
   const fetchOrders = async () => {
     try {
-      const response = await fetch('http://localhost:8000/orders');
+      const response = await fetch(`${API_BASE_URL}/orders`);
       const data = await response.json();
       setOrders(data);
     } catch (error) {
@@ -28,7 +29,7 @@ export default function OrderManagement() {
 
   const searchOrders = async (term: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/orders/search?search=${encodeURIComponent(term)}`);
+      const response = await fetch(`${API_BASE_URL}/orders/search?search=${encodeURIComponent(term)}`);
       const data = await response.json();
       setOrders(data);
     } catch (error) {

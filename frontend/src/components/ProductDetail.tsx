@@ -1,5 +1,6 @@
 import {useEffect, useState} from 'react';
 import svgPaths from '../imports/svg-2ijf4c8ns8';
+import { API_BASE_URL } from '../config/api';
 
 import swoosh from './static/swoosh.png';
 import thumbnail1 from './static/pic1.jpg';
@@ -87,7 +88,7 @@ export default function ProductDetail({
 
   const getProductData = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/products/${encodeURIComponent(productId)}`);
+      const response = await fetch(`${API_BASE_URL}/products/${encodeURIComponent(productId)}`);
       const data = await  response.json();
       setProductData(data);
     } catch (error) {
