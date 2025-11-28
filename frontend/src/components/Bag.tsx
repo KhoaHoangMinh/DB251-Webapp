@@ -3,6 +3,7 @@ import { ArrowLeft, Trash2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
 import imgImage1 from './static/swoosh.png';
+import { API_BASE_URL } from '../config/api';
 
 interface CartItem {
   cartID: string;
@@ -53,7 +54,7 @@ export default function Bag({ customerID, onBack, onNavigateToHome }: BagProps) 
 
   const fetchCart = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/cart/${customerID}`);
+      const response = await fetch(`${API_BASE_URL}/cart/${customerID}`);
       const data = await response.json();
       setCart(data);
     } catch (error) {
@@ -214,17 +215,13 @@ function CartItemCard({
 
   const handleRemoveItem = async () => {
     try {
-      const response = await fetch('http://localhost:8000/cart/', {
+      await fetch(`${API_BASE_URL}/cart`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cartID: item.cartID, productID: item.productID }),
       });
 
-      if (response.ok) {
-        onItemRemoved(); // Trigger re-fetch of the cart
-      } else {
-        console.error('Failed to remove item from cart');
-      }
+      onItemRemoved(); // Trigger re-fetch of the cart
     } catch (error) {
       console.error('Error removing item from cart:', error);
     }

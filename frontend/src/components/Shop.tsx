@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import imgImage1 from './static/swoosh.png';
 import { Search, ShoppingBag, Home } from 'lucide-react';
 import { Button } from './ui/button';
+import { API_BASE_URL } from '../config/api';
 
 import thumbnail1 from './static/pic1.jpg';
 import thumbnail2 from './static/pic2.png';
@@ -126,7 +127,7 @@ export default function Shop({ onProductClick, onBackToManagement, onNavigateToH
   const [searchTerm, setsearchTerm] = useState('');
   const fetchProducts = async () => {
     try {
-      const response = await fetch('http://localhost:8000/products'); // Adjust the URL if needed
+      const response = await fetch(`${API_BASE_URL}/products`);
       const data = await response.json();
       setProducts(data);
     } catch (error) {
