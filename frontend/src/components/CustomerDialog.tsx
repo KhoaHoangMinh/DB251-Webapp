@@ -14,7 +14,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 
 interface Customer {
   customerID: string;
-  age: number;
   customerName: string;
   email: string;
   dateOfBirth: string;
@@ -33,7 +32,6 @@ interface CustomerDialogProps {
 export default function CustomerDialog({ customer, open, onOpenChange, onSave }: CustomerDialogProps) {
   const [formData, setFormData] = useState<Partial<Customer>>({
     customerID: '',
-    age: 0,
     customerName: '',
     email: '',
     dateOfBirth: '',
@@ -50,7 +48,6 @@ export default function CustomerDialog({ customer, open, onOpenChange, onSave }:
     } else {
       setFormData({
         customerID: '',
-        age: 0,
         customerName: '',
         email: '',
         dateOfBirth: '',
@@ -76,7 +73,6 @@ export default function CustomerDialog({ customer, open, onOpenChange, onSave }:
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.customerName) newErrors.customerName = 'Customer name is required.';
-    if (!formData.age || formData.age <= 0) newErrors.age = 'Age must be greater than 0.';
     if (!formData.email) newErrors.email = 'Email is required.';
     if (!formData.dateOfBirth) newErrors.dateOfBirth = 'Date of birth is required.';
     if (!formData.phone || formData.phone <= 0) newErrors.phone = 'Phone number is required.';
@@ -114,19 +110,6 @@ export default function CustomerDialog({ customer, open, onOpenChange, onSave }:
                 placeholder="John Doe"
               />
               {errors.customerName && <p className="text-red-500 text-sm">{errors.customerName}</p>}
-            </div>
-
-            {/* Age */}
-            <div>
-              <Label htmlFor="age">Age</Label>
-              <Input
-                id="age"
-                type="number"
-                value={formData.age}
-                onChange={(e) => handleChange('age', parseInt(e.target.value))}
-                placeholder="30"
-              />
-              {errors.age && <p className="text-red-500 text-sm">{errors.age}</p>}
             </div>
 
             {/* Email */}

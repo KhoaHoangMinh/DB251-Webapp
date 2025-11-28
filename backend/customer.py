@@ -10,7 +10,6 @@ from models import Customer
 router = APIRouter(prefix="/customers", tags=["Customers"])
 
 class CustomersCreate(BaseModel):
-    age: int
     customerName: str
     email: str
     dateOfBirth: str
@@ -23,7 +22,6 @@ class SummaryStats(BaseModel):
     avg_age: float
 
 class CustomerUpdate(BaseModel):
-    age: Optional[int] = None
     customerName: Optional[str] = None
     email: Optional[str] = None
     dateOfBirth: Optional[str] = None
@@ -104,8 +102,6 @@ def update_customer(id: str, customer: CustomerUpdate, db: db_dependency):
         raise HTTPException(status_code=404, detail="Customer not found")
     
     try:
-        if customer.age is not None and db_customer.age != customer.age:
-            db_customer.age = customer.age
         if customer.customerName and db_customer.customerName != customer.customerName:
             db_customer.customerName = customer.customerName
         if customer.email and db_customer.email != customer.email:

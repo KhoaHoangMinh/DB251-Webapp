@@ -1,14 +1,14 @@
 USE database_webapp;
 GO
 
-INSERT INTO Customer (Age, DateOfBirth, CustomerName, Email, Phone, LoyaltyPoints) VALUES
-(25, '1999-03-15', 'John Smith', 'john.smith@gmail.com', '555-0101', 150),
-(30, '1994-07-22', 'Sarah Johnson', 'sarah.j@gmail.com', '555-0102', 300),
-(22, '2002-11-08', 'Mike Davis', 'mike.davis@gmail.com', '555-0103', 75),
-(28, '1996-05-30', 'Emily Wilson', 'emily.wilson@gmail.com', '555-0104', 500),
-(35, '1989-09-14', 'David Brown', 'david.brown@gmail.com', '555-0105', 200),
-(19, '2005-01-25', 'Jessica Lee', 'jessica.lee@gmail.com', '555-0106', 50),
-(32, '1992-12-03', 'Robert Taylor', 'robert.t@gmail.com', '555-0107', 400);
+INSERT INTO Customer (DateOfBirth, CustomerName, Email, Phone, LoyaltyPoints) VALUES
+( '1999-03-15', 'John Smith', 'john.smith@gmail.com', '555-0101', 150),
+( '1994-07-22', 'Sarah Johnson', 'sarah.j@gmail.com', '555-0102', 300),
+( '2002-11-08', 'Mike Davis', 'mike.davis@gmail.com', '555-0103', 75),
+( '1996-05-30', 'Emily Wilson', 'emily.wilson@gmail.com', '555-0104', 500),
+( '1989-09-14', 'David Brown', 'david.brown@gmail.com', '555-0105', 200),
+( '2005-01-25', 'Jessica Lee', 'jessica.lee@gmail.com', '555-0106', 50),
+( '1992-12-03', 'Robert Taylor', 'robert.t@gmail.com', '555-0107', 400);
 
 INSERT INTO Store (StoreName, StoreAddress, OpeningHour, ClosingHour, PhoneNumber, Email) VALUES
 ('Nike Downtown', '123 Main Street, City Center', '09:00', '21:00', '555-1001', 'downtown@nike.com'),
