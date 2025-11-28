@@ -20,7 +20,7 @@ class Customer(Base):
         ),
         nullable=False,
     )
-    age = Column(Integer, nullable=False)
+    age = Column(Integer, FetchedValue())
     dateOfBirth = Column(Date, nullable=False)
     customerName = Column(String(100), nullable=False)
     email = Column(String(100), unique=True, nullable=False)
