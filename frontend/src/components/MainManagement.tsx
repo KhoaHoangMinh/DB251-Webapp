@@ -44,7 +44,7 @@ export default function MainManagement({ currentUser, onLogout, onNavigateToShop
       {/* Main Content with Tabs */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs defaultValue="employees" className="w-full">
-          <TabsList className="grid w-full max-w-2xl mb-6" style={{ gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr' }}>
+          <TabsList className="grid w-full max-w-2xl mb-6" style={{ gridTemplateColumns: '1fr 1fr 1fr 1fr' }}>
             <TabsTrigger value="employees" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
               Employees
@@ -61,10 +61,6 @@ export default function MainManagement({ currentUser, onLogout, onNavigateToShop
               <ShoppingCart className="w-4 h-4" />
               Orders
             </TabsTrigger>
-            <TabsTrigger value="stores" className="flex items-center gap-2">
-              <Building className="w-4 h-4" />
-              Stores
-            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="employees">
@@ -79,9 +75,6 @@ export default function MainManagement({ currentUser, onLogout, onNavigateToShop
           <TabsContent value="orders">
             <OrderManagement />
           </TabsContent>
-          {/*<TabsContent value="stores">*/}
-          {/*  <ProductManagement />*/}
-          {/*</TabsContent>*/}
 
         </Tabs>
       </main>
