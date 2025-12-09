@@ -59,11 +59,31 @@ def view_product(product_id: str, db: db_dependency):
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
 def create_product(product: ProductCreate, db: db_dependency):
-    new_product = Product(**product.model_dump())
-    db.add(new_product)
-    db.commit()
-    db.refresh(new_product)
-    return new_product
+    try:
+        query = text("""
+        EXEC dbo.CreateNewProduct
+            @ProductName = :productName,
+            @ProductDescription = :productDescription,
+            @Price = :productPrice,
+            @StockQuantity = :stockQuantity
+        """)
+        params = {
+            'productName' : product.productName,
+            'productDescription' : product.productDescription,
+            'productPrice' : product.price,
+            'stockQuantity' : product.stockQuantity
+        }
+        db.execute(query, params)
+        db.commit()
+
+        return "Product created successfully"
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    # new_product = Product(**product.model_dump())
+    # db.add(new_product)
+    # db.commit()
+    # db.refresh(new_product)
+    # return new_product
 
 @router.post("/create_bulk", status_code=status.HTTP_201_CREATED)
 def create_products(products: List[ProductCreate], db: db_dependency):
@@ -74,22 +94,32 @@ def create_products(products: List[ProductCreate], db: db_dependency):
 
 @router.put("/{product_id}")
 def update_product(product_id: str, product_update: ProductUpdate, db: db_dependency):
-    product = db.query(Product).filter(Product.productID == product_id).first()
-    if not product:
-        raise HTTPException(status_code=404, detail="Invalid product ID")
-    if product_update.productName and product.productName != product_update.productName:
-        product.productName = product_update.productName
-    if product_update.productDescription and product.productDescription != product_update.productDescription:
-        product.productDescription = product_update.productDescription
-    if product_update.price and product.price != product_update.price:
-        product.price = product_update.price
-    if product_update.stock and product.stockQuantity != product_update.stock:
-        product.stockQuantity = product_update.stock
-    if product_update.isActive is not None:
-        product.isActive = product_update.isActive
-    db.commit()
-    db.refresh(product)
-    return product
+    try:
+        query = text("""
+        EXEC dbo.UpdateProductDetails 
+            @ProductID = :productID, 
+            @ProductName = :productName, 
+            @ProductDescription = :productDescription, 
+            @Price = :price, 
+            @StockQuantity = :stockQuantity, 
+            @IsActive = :isActive
+        """)
+
+        params = {
+            'productID' : product_id,
+            'productName' : product_update.productName,
+            'productDescription' : product_update.productDescription,
+            'price' : product_update.price,
+            'stockQuantity' : product_update.stock,
+            'isActive' : product_update.isActive,
+        }
+
+        db.execute(query, params)
+        db.commit()
+
+        return "Product updated successfully"
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.delete("/")
 def delete_bulk(indexes: List[str], db: db_dependency):
@@ -99,13 +129,14 @@ def delete_bulk(indexes: List[str], db: db_dependency):
 
 @router.delete("/{product_id}")
 def delete_product(product_id: str, db: db_dependency):
-    product = db.query(Product).filter(Product.productID == product_id).first()
-    if not product:
-        raise HTTPException(status_code=404, detail="Invalid product ID")
     try:
-        db.delete(product)
+        query = text("EXEC dbo.DeleteProductPermanently @ProductID = :productID")
+
+        db.execute(query, {'productID' : product_id})
         db.commit()
-        return {"message": f"Product {product_id} deleted successfully"}
+
+        return "Product deleted successfully"
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

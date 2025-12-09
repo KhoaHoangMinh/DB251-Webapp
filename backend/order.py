@@ -52,7 +52,6 @@ class OrderCreate(BaseModel):
     orderStatus: str
 
 class OrderUpdate(BaseModel):
-    customerID: Optional[str] = None
     storeID: Optional[str] = None
     orderStatus: Optional[str] = None
 
@@ -117,7 +116,7 @@ def get_order_summary(id: str, db: db_dependency):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put('/{id}')
+@router.put('/stock_update/{id}')
 def update_stock_after_order(id: str, db: db_dependency):
     try:
         query = text("EXEC dbo.UpdateStockAfterOrder @OrderID=:id")
@@ -206,17 +205,16 @@ def create_order(new_order: OrderCreate, db: db_dependency):
     created_order = create_order_helper(new_order, db)
     create_order_items(cartID, created_order.orderID, db)
     update_stock_after_order(created_order.orderID, db)
-    return {"message" : "success"}
+    return {"message": "success"}
 
 @router.delete("/{id}")
 def delete_order(id: str, db: db_dependency):
-    db_order = db.query(Orders).filter(Orders.orderID == id).first()
-    if not db_order:
-        raise HTTPException(status_code=404, detail="order not found")
     try:
-        db.delete(db_order)
+        query = text("EXEC dbo.DeleteOrderPermanently @OrderID = :orderID")
+        db.execute(query, {"orderID" : id})
         db.commit()
-        return {"message": f"Order {id} deleted successfully"}
+
+        return "Order deleted successfully"
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -228,21 +226,23 @@ def delete_orders(indexes : List[str] = Body(...), db : Session = Depends(get_db
 
 @router.put("/{id}", status_code=status.HTTP_200_OK)
 def order_update(id: str, order: OrderUpdate, db: db_dependency):
-    db_order = db.query(Orders).filter(Orders.orderID == id).first()
-
-    if not db_order:
-        raise HTTPException(status_code=404, detail="order not found")
-
     try:
-        if order.orderStatus and db_order.orderStatus != order.orderStatus:
-            db_order.orderStatus = order.orderStatus
-        if order.customerID and db_order.customerID != order.customerID:
-            db_order.customerID = order.customerID
-        if order.storeID and db_order.storeID != order.storeID:
-            db_order.storeID = order.storeID
+        query = text("""
+        EXEC dbo.UpdateOrderDetails 
+            @OrderID = :orderID, 
+            @StoreID = :storeID, 
+            @OrderStatus = :orderStatus
+        """)
 
+        params ={
+            'orderID': id,
+            'storeID': order.storeID,
+            'orderStatus': order.orderStatus
+        }
+
+        db.execute(query, params)
         db.commit()
-        db.refresh(db_order)
-        return db_order
+
+        return "Order updated successfully"
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

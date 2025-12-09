@@ -23,6 +23,8 @@ class SummaryStats(BaseModel):
     avg_salary: float
 
 class EmployeeUpdate(BaseModel):
+    employeeName: Optional[str] = None
+    storeID: Optional[str] = None
     department: Optional[str] = None
     position: Optional[str] = None
     salary: Optional[float] = None
@@ -69,11 +71,30 @@ def view_employee(id: str, db : db_dependency):
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 def create_employee(new_employee: EmployeesCreate, db: db_dependency):
-    db_employee = Employee(**new_employee.model_dump())
-    db.add(db_employee)
-    db.commit()
-    db.refresh(db_employee)
-    return db_employee
+    try:
+        query = text("""
+        EXEC dbo.CreateNewEmployee
+            @EmployeeName = :employeeName,
+            @StoreID = :storeID,
+            @Department = :department,
+            @Position = :position,
+            @Salary = :salary
+        """)
+
+        params = {
+            "employeeName": new_employee.employeeName,
+            "storeID": new_employee.storeID,
+            "department": new_employee.department,
+            "position": new_employee.position,
+            "salary": new_employee.salary
+        }
+
+        db.execute(query, params)
+        db.commit()
+
+        return "Employee created successfully"
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/bulk", status_code = status.HTTP_201_CREATED)
 def create_employees(employees: List[EmployeesCreate], db : db_dependency):
@@ -83,22 +104,33 @@ def create_employees(employees: List[EmployeesCreate], db : db_dependency):
     return created
 
 @router.put("/{id}")
-def update_employee(id: str, employee : EmployeeUpdate, db : db_dependency):
-    db_employee = db.query(Employee).filter(Employee.employeeID == id).first()
-    if not db_employee:
-        raise HTTPException(status_code=404, detail="employee not found")
+def update_employee(id: str, updated_employee : EmployeeUpdate, db : db_dependency):
     try:
-        if employee.position and db_employee.position != employee.position:
-            db_employee.position = employee.position
-        if employee.department and db_employee.department != employee.department:
-            db_employee.department = employee.department
-        if employee.salary and db_employee.salary != employee.salary:
-            db_employee.salary = employee.salary
-        if employee.isActive is not None:
-            db_employee.isActive = employee.isActive
+        query = text("""
+        EXEC dbo.UpdateEmployeeDetails
+             @EmployeeID = :employeeID,
+             @EmployeeName = :employeeName,
+             @StoreID = :storeID,
+             @Department = :department,
+             @Position = :position,
+             @Salary = :salary,
+             @IsActive = :isActive
+        """)
+
+        params = {
+            "employeeID": id,
+            "employeeName": updated_employee.employeeName,
+            "storeID": updated_employee.storeID,
+            "department": updated_employee.department,
+            "position": updated_employee.position,
+            "salary": updated_employee.salary,
+            "isActive": updated_employee.isActive
+        }
+
+        db.execute(query, params)
         db.commit()
-        db.refresh(db_employee)
-        return db_employee
+
+        return "Employee updated successfully"
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -108,14 +140,13 @@ def delete_bulk(indexes : List[str] = Body(...), db : Session = Depends(get_db))
         delete_employee(index, db)
     return {"message": "success"}
 
-@router.delete("/{id}")
-def delete_employee(id: str, db : db_dependency):
-    db_employee = db.query(Employee).filter(Employee.employeeID == id).first()
-    if not db_employee:
-        raise HTTPException(status_code=404, detail="employee not found")
+@router.delete("/{employee_id}")
+def delete_employee(employee_id: str, db : db_dependency):
     try:
-        db.delete(db_employee)
+        query = text("EXEC dbo.DeleteEmployeePermanently @EmployeeID = :employeeID")
+        db.execute(query, {"employeeID": employee_id})
         db.commit()
-        return {"message": f"Employee {id} deleted successfully"}
+
+        return "Employee deleted successfully"
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -13,9 +13,7 @@ class CustomersCreate(BaseModel):
     customerName: str
     email: str
     dateOfBirth: str
-    phone: int
-    isActive: bool
-    loyaltyPoints: int
+    phone: str
 
 class SummaryStats(BaseModel):
     total_Customers: int
@@ -82,11 +80,28 @@ def view_customer(id: str, db : db_dependency):
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 def create_customer(new_customer: CustomersCreate, db: db_dependency):
-    db_customer = Customer(**new_customer.model_dump())
-    db.add(db_customer)
-    db.commit()
-    db.refresh(db_customer)
-    return db_customer
+    try:
+        query = text("""
+        EXEC dbo.CreateNewCustomer
+            @CustomerName = :customerName,
+            @DateOfBirth = :dateOfBirth,
+            @Email = :email,    
+            @Phone = :phone
+        """)
+
+        params = {
+            "customerName": new_customer.customerName,
+            "dateOfBirth": new_customer.dateOfBirth,
+            "email": new_customer.email,
+            "phone": new_customer.phone
+        }
+
+        db.execute(query, params)
+        db.commit()
+
+        return "Customer created successfully"
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/bulk", status_code = status.HTTP_201_CREATED)
 def create_customers(customers: List[CustomersCreate], db : db_dependency):
@@ -97,27 +112,32 @@ def create_customers(customers: List[CustomersCreate], db : db_dependency):
 
 @router.put("/{id}")
 def update_customer(id: str, customer: CustomerUpdate, db: db_dependency):
-    db_customer = db.query(Customer).filter(Customer.customerID == id).first()
-    if not db_customer:
-        raise HTTPException(status_code=404, detail="Customer not found")
-    
     try:
-        if customer.customerName and db_customer.customerName != customer.customerName:
-            db_customer.customerName = customer.customerName
-        if customer.email and db_customer.email != customer.email:
-            db_customer.email = customer.email
-        if customer.dateOfBirth and db_customer.dateOfBirth != customer.dateOfBirth:
-            db_customer.dateOfBirth = customer.dateOfBirth
-        if customer.phone and db_customer.phone != customer.phone:
-            db_customer.phone = customer.phone
-        if customer.isActive is not None:
-            db_customer.isActive = customer.isActive
-        if customer.loyaltyPoints is not None and db_customer.loyaltyPoints != customer.loyaltyPoints:
-            db_customer.loyaltyPoints = customer.loyaltyPoints
+        query = text("""
+        EXEC dbo.UpdateCustomerDetails
+             @CustomerID = :customerID,
+             @CustomerName = :customerName,
+             @DateOfBirth = :dateOfBirth,
+             @Email = :email,
+             @Phone = :phone,
+             @IsActive = :isActive,
+             @LoyaltyPoints = :loyaltyPoints
+        """)
 
+        params = {
+            "customerID": id,
+            "customerName": customer.customerName,
+            "dateOfBirth": customer.dateOfBirth,
+            "email": customer.email,
+            "phone": customer.phone,
+            "isActive": customer.isActive,
+            "loyaltyPoints": customer.loyaltyPoints,
+        }
+
+        db.execute(query, params)
         db.commit()
-        db.refresh(db_customer)
-        return db_customer
+
+        return "Customer updated successfully"
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -129,13 +149,12 @@ def delete_bulk(indexes : List[str] = Body(...), db : Session = Depends(get_db))
 
 @router.delete("/{id}")
 def delete_customer(id: str, db : db_dependency):
-    db_customer = db.query(Customer).filter(Customer.customerID == id).first()
-    if not db_customer:
-        raise HTTPException(status_code=404, detail="Customer not found")
     try:
-        db.delete(db_customer)
+        query = text("EXEC dbo.DeleteCustomerPermanently @CustomerID = :customerID")
+        db.execute(query, {"customerID": id})
         db.commit()
-        return {"message": f"Customer {id} deleted successfully"}
+
+        return "Customer deleted successfully"
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

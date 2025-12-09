@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 from typing import Optional, Dict, List, Annotated
 from pydantic import BaseModel
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from database import db_dependency
@@ -32,33 +33,75 @@ def get_customer_cart(id: str, db: db_dependency):
 
 @router.post('/')
 def add_to_cart(item: CartItemCreate, db: db_dependency):
-    db_item = CartItem(**item.model_dump())
-    db.add(db_item)
-    db.commit()
-    db.refresh(db_item)
-    return db_item
+    try:
+        query = text("""
+        EXEC dbo.AddCartItem
+            @CartID = :cartID, 
+            @ProductID = :productID, 
+            @Quantity = :quantity, 
+            @UnitPrice = :unitPrice
+        """)
+
+        params = {
+            'cartID': item.cartID,
+            'productID': item.productID,
+            'quantity': item.quantity,
+            'unitPrice': item.unitPrice
+        }
+        db.execute(query, params)
+        db.commit()
+
+        return "Add to cart successfully"
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    # db_item = CartItem(**item.model_dump())
+    # db.add(db_item)
+    # db.commit()
+    # db.refresh(db_item)
+    # return db_item
 
 @router.delete('/')
-def remove_from_cart(query: ItemQuery, db: db_dependency):
-    cart_item = db.query(CartItem).filter(CartItem.cartID == query.cartID).filter(CartItem.productID == query.productID).first()
-    if not cart_item:
-        raise HTTPException(status_code=404, detail='Cart item not found')
+def remove_from_cart(item_query: ItemQuery, db: db_dependency):
     try:
-        db.delete(cart_item)
+        query = text("EXEC dbo.DeleteCartItem @CartID = :cartID, @ProductID = :productID")
+        params = {
+            'cartID': item_query.cartID,
+            'productID': item_query.productID
+        }
+
+        db.execute(query, params)
         db.commit()
-        return {"message": f"CartItem deleted successfully"}
+
+        return "Removed from cart successfully"
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.put('/{qty}')
-def update_qty(qty: int, query: ItemQuery, db: db_dependency):
-    if(qty <= 0):
+def update_qty(qty: int, item_query: ItemQuery, db: db_dependency):
+    if qty <= 0:
         raise HTTPException(status_code=400, detail='Invalid quantity')
-    cart_item = db.query(CartItem).filter(CartItem.cartID == query.cartID).filter(CartItem.productID == query.productID).first()
+    cart_item = db.query(CartItem).filter(CartItem.cartID == item_query.cartID).filter(
+        CartItem.productID == item_query.productID).first()
     if not cart_item:
         raise HTTPException(status_code=404, detail='Cart item not found')
-    cart_item.quantity = qty
-    db.commit()
-    db.refresh(cart_item)
-    return cart_item
+    try:
+        query = text("""
+        EXEC dbo.UpdateCartItem
+            @CartID = :cartID, 
+            @ProductID = :productID, 
+            @Quantity = :quantity
+        """)
+
+        params = {
+            'cartID' : item_query.cartID,
+            'productID': item_query.productID,
+            'quantity': qty
+        }
+
+        db.execute(query, params)
+        db.commit()
+
+        return "Update quantity successfully"
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
