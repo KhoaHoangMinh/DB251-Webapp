@@ -1,138 +1,128 @@
 from fastapi import APIRouter, HTTPException, status
-from typing import Optional, Dict, List
-
-from fastapi.params import Query
+from typing import Optional, Dict, List, Annotated
 from pydantic import BaseModel
+from sqlalchemy import text
+
+from database import db_dependency
+from models import Product
 
 router = APIRouter(prefix="/products", tags=["Products"])
 
-class Product(BaseModel):
-    id: int
-    name: str
-    category: str
-    price: float
-    stock: int
-
-class ProductSearch(BaseModel):
-    name: Optional[str] = None
-    category: Optional[str] = None
-
 class ProductUpdate(BaseModel):
-    name: Optional[str] = None
-    category: Optional[str] = None
+    productName: Optional[str] = None
+    productDescription: Optional[str] = None
     price: Optional[float] = None
     stock: Optional[int] = None
+    isActive: Optional[bool] = None
 
 class ProductCreate(BaseModel):
-    name: str
-    category: str
-    price: float
-    stock: int
-
-class StockUpdate(BaseModel):
-    stock: int
+    productName: str
+    productDescription: str
+    price: Optional[float] = None
+    stockQuantity: Optional[int] = None
 
 class SummaryStats(BaseModel):
     total_products: int
-    total_stock: int
-    avg_price: float
 
-product_db: Dict[int, Product] = {
-    1: Product(id=1, name="Macbook", category="Electronics", price=1200.0, stock=15),
-    2: Product(id=2, name="Smartphone", category="Electronics", price=800.0, stock=30),
-    3: Product(id=3, name="Desk Chair", category="Furniture", price=150.0, stock=10),
-    4: Product(id=4, name="Gaming Laptop", category="Electronics", price=1800.0, stock=8),
-    5: Product(id=5, name="Wireless Mouse", category="Electronics", price=25.0, stock=100),
-    6: Product(id=6, name="Bluetooth Headphones", category="Electronics", price=150.0, stock=25),
-    7: Product(id=7, name="LED TV", category="Electronics", price=500.0, stock=20),
-    8: Product(id=8, name="Dining Table", category="Furniture", price=350.0, stock=5),
-    9: Product(id=9, name="Bookshelf", category="Furniture", price=120.0, stock=12),
-    10: Product(id=10, name="Electric Kettle", category="Home Appliances", price=30.0, stock=50),
-    11: Product(id=11, name="Blender", category="Home Appliances", price=70.0, stock=40),
-    12: Product(id=12, name="Microwave", category="Home Appliances", price=100.0, stock=15),
-    13: Product(id=13, name="Coffee Maker", category="Home Appliances", price=90.0, stock=18),
-    14: Product(id=14, name="Refrigerator", category="Home Appliances", price=600.0, stock=10),
-    15: Product(id=15, name="Office Desk", category="Furniture", price=200.0, stock=7),
-}
-next_id = 16
+class BestSellingProduct(BaseModel):
+    productID: str
+    productName: str
+    totalQuantitySold: int
 
-@router.get("/", response_model=List[Product])
-def list_products() -> List[Product]:
-    return list(product_db.values())
+@router.get("/")
+def list_products(db: db_dependency):
+    return db.query(Product).all()
 
 @router.get("/stats", response_model=SummaryStats)
-def get_summary_stats() -> SummaryStats:
-    total_products = len(product_db)
+def get_summary_stats(db: db_dependency) -> SummaryStats:
+    total_products = db.query(Product).count()
     if total_products == 0:
-        return SummaryStats(total_products=0, total_stocks=0, avg_price=0.0)
-    total_stock = sum(product.stock for product in product_db.values())
-    avg_price = round(sum(product.price for product in product_db.values())/total_products, 2)
-    return SummaryStats(total_products=total_products, total_stock=total_stock, avg_price=avg_price)
+        return SummaryStats(total_products=0)
+    return SummaryStats(total_products=total_products)
 
-@router.get("/search", response_model=List[Product])
-def search_product(query: ProductSearch) -> List[Product]:
-    results = list(product_db.values())
-    if query.name:
-        results = [p for p in results if query.name.lower() in p.name.lower()]
-    elif query.category:
-        results = [p for p in results if query.category.lower() in p.category.lower()]
-    return results
+def search_cond(a, b):
+    return (a.lower() in b.productID.lower()
+            or a.lower() in b.productName.lower()
+            or a.lower() in b.productDescription.lower())
+@router.get("/search")
+def search_product(search: str, db: db_dependency):
+    products = list(db.query(Product).all())
+    products = [p for p in products if search_cond(search, p)]
+    return products
 
-@router.get("/{product_id}", response_model=Product)
-def view_product(product_id: int) -> List[Product]:
-    product = product_db.get(product_id)
+@router.get("/{product_id}")
+def view_product(product_id: str, db: db_dependency):
+    product = db.query(Product).get(product_id)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
     return product
 
-@router.post("/create", response_model=Product, status_code=status.HTTP_201_CREATED)
-def create_product(product: ProductCreate) -> Product:
-    global next_id
-    new_product = Product(id= next_id, **product.dict())
-    product_db[next_id] = new_product
-    next_id += 1
+@router.post("/create", status_code=status.HTTP_201_CREATED)
+def create_product(product: ProductCreate, db: db_dependency):
+    new_product = Product(**product.model_dump())
+    db.add(new_product)
+    db.commit()
+    db.refresh(new_product)
     return new_product
 
-@router.post("/create_bulk", response_model=List[Product], status_code=status.HTTP_201_CREATED)
-def create_products(products: List[ProductCreate]) -> List[Product]:
+@router.post("/create_bulk", status_code=status.HTTP_201_CREATED)
+def create_products(products: List[ProductCreate], db: db_dependency):
     created = []
     for product in products:
-        created.append(create_product(product))
+        created.append(create_product(product, db))
     return created
 
-@router.put("/{product_id}", response_model=Product)
-def update_product(product_update: ProductUpdate, product_id: int) -> Product:
-    product = product_db.get(product_id)
+@router.put("/{product_id}")
+def update_product(product_id: str, product_update: ProductUpdate, db: db_dependency):
+    product = db.query(Product).filter(Product.productID == product_id).first()
     if not product:
         raise HTTPException(status_code=404, detail="Invalid product ID")
-    if product_update.name: product.name = product_update.name
-    if product_update.category: product.category = product_update.category
-    if product_update.price: product.price = product_update.price
-    if product_update.stock: product.stock = product_update.stock
-    return product
-
-@router.patch("/{product_id}/stock", response_model=Product)
-def update_qty(product_id: int, stock_update: StockUpdate) -> Product:
-    product = product_db.get(product_id)
-    if not product:
-        raise HTTPException(status_code=404, detail="Invalid product ID")
-    if stock_update.stock < 0:
-        raise HTTPException(status_code=400, detail="Negative stock qty")
-    product.stock = stock_update.stock
-    product_db[product_id] = product
+    if product_update.productName and product.productName != product_update.productName:
+        product.productName = product_update.productName
+    if product_update.productDescription and product.productDescription != product_update.productDescription:
+        product.productDescription = product_update.productDescription
+    if product_update.price and product.price != product_update.price:
+        product.price = product_update.price
+    if product_update.stock and product.stockQuantity != product_update.stock:
+        product.stockQuantity = product_update.stock
+    if product_update.isActive is not None:
+        product.isActive = product_update.isActive
+    db.commit()
+    db.refresh(product)
     return product
 
 @router.delete("/")
-def delete_bulk(indexes: List[int]):
+def delete_bulk(indexes: List[str], db: db_dependency):
     for index in indexes:
-        delete_product(index)
+        delete_product(index, db)
     return {"message" : "success"}
 
 @router.delete("/{product_id}")
-def delete_product(product_id: int):
-    if not product_db.get(product_id):
+def delete_product(product_id: str, db: db_dependency):
+    product = db.query(Product).filter(Product.productID == product_id).first()
+    if not product:
         raise HTTPException(status_code=404, detail="Invalid product ID")
-    product_db.pop(product_id)
-    return {"message": f"Product {product_id} deleted successfully"}
+    try:
+        db.delete(product)
+        db.commit()
+        return {"message": f"Product {product_id} deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/get_top_selling_products/{top}")
+def get_top_selling_products(top: int, db: db_dependency):
+    try:
+        query = text("EXEC dbo.GetTopSellingProductsByQuantity @TopN=:top")
+        result = db.execute(query, {"top": top}).fetchall()
 
+        top_products = []
+        for row in result:
+            top_products.append(BestSellingProduct(
+                productID=row[0],
+                productName=row[1],
+                totalQuantitySold=row[2]
+            ))
+
+        return top_products
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
